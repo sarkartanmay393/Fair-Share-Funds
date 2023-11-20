@@ -1,5 +1,0 @@
-Flask
-Flask-RESTful 
-Flask-SQLAlchemy
-Flask-Migrate
-mysql-connector-python        
