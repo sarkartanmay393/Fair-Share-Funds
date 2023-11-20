@@ -1,15 +1,27 @@
+import './styles/globals.css';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+
 import App from './App';
+import Theme from './theme/theme';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
+const mode = 'dark';
+const theme = createTheme(Theme(mode));
+
+
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={theme}>
+      <App />
+      <CssBaseline enableColorScheme />
+    </ThemeProvider>
   </React.StrictMode>
 );
 
