@@ -28,15 +28,12 @@ const Theme = (mode: PaletteMode) => {
         : {
             primary: {
               main: "#ffffff",
-              // light: "rgba(0, 0, 0, 0.7)",
             },
             secondary: {
               main: "#109c51",
             },
             text: {
               primary: common.black,
-              // secondary: "rgba(0, 0, 0, 0.6)",
-              // contrastColor: common.white,
             },
             divider: "rgba(0,0,0,0.6)",
             background: {
@@ -50,7 +47,6 @@ const Theme = (mode: PaletteMode) => {
         tablet: 600,
         laptop: 1024,
         desktop: 1200,
-        mobileEnd: 456,
       },
     },
     typography: {
@@ -155,7 +151,6 @@ declare module "@mui/material/styles" {
     tablet: true;
     laptop: true;
     desktop: true;
-    mobileEnd: true;
   }
 }
 

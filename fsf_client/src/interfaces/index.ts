@@ -1,11 +1,12 @@
 import { Action } from "easy-peasy";
 
 export interface User {
-  id: any;
+  id: string;
   name: string;
   email: string;
-  password: null;
   username: string;
+  rooms: string[];
+  balance_sheet: {};
 }
 
 export interface GlobalStore {

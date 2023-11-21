@@ -1,8 +1,7 @@
-import random
-from flask import request, jsonify, Response
+from flask import jsonify, request, Response
 from flask_restful import Resource
 from mysqlx import IntegrityError
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import decode_token, jwt_required, create_access_token, get_jwt_identity
 
 from app import api, db, bc
 from app.models import Room, User
@@ -34,14 +33,18 @@ class SignupResource(Resource):
 
             db.session.add(user)
             db.session.commit()
-            return {
-                'message': 'Account Created Successfully!',
-                'user': {
-                    'email': user.email,
-                    'password': req.get('password'),
-                }
-            }, 201
 
+            access_token=create_access_token(identity=user.id, expires_delta=False)
+            response = jsonify(
+                email=str(user.email),
+                username = str(user.username),
+                id = str(user.id),
+                name = str(user.name)
+            )
+            response.set_cookie('access_token', value=access_token, max_age=24 * 60 * 60)
+            response.status_code = 201
+            return response
+        
         except IntegrityError as e:
             db.session.rollback()
             return {'error': 'Email or username already exists'}, 409
@@ -64,13 +67,14 @@ class LoginResource(Resource):
             user = User.query.filter_by(email=email).first()
             if user and  bc.check_password_hash(user.password, password):
                 access_token=create_access_token(identity=user.id, expires_delta=False)
-                response = Response({
-                    'email': user.email,
-                    'username': user.username,
-                    'id': user.id,
-                    'name': user.name
-                })
+                response = jsonify(
+                    email=str(user.email),
+                    username = str(user.username),
+                    id = str(user.id),
+                    name = str(user.name)
+                )
                 response.set_cookie('access_token', value=access_token, max_age=24 * 60 * 60)
+                response.status_code = 200
                 return response
             else:
                 return {'error': 'user data not matched'}, 401
@@ -180,25 +184,6 @@ class CreateRoomResource(Resource):
 
 class UserResource(Resource):
     @jwt_required()
-    def get(self):
-        try:
-            user_id = get_jwt_identity()
-            user = User.query.get(str(user_id))
-            if not user:
-                return {'error': 'no user found by the id'}, 401
-
-            response = {
-                'name': user.name,
-                'rooms': user.rooms,
-                'email': user.email,
-                'username': user.username,
-                'balance_sheet': user.balance_sheet
-            }
-            return response, 200
-        except Exception as e:
-            return { 'error': str(e) }, 500
-        
-    @jwt_required()
     def put(self):
         req = request.get_json()
         if not req:
@@ -228,6 +213,30 @@ class UserResource(Resource):
             }, 200
         except Exception as e:
             return {'error': str(e)}, 500
+        
+
+
+    def get(self):
+        ck = request.cookies
+        if not ck:
+            return {'error': 'not authenticated.'}, 400
+    
+        user_id = decode_token(ck.get('access_token')).get('sub')
+        try:
+            user = User.query.get(str(user_id))
+            if not user:
+                return {'error': 'no user found by the id'}, 401
+            response = {
+                'name': user.name,
+                'rooms': user.rooms,
+                'email': user.email,
+                'username': user.username,
+                'balance_sheet': user.balance_sheet
+            }
+            return response, 200
+        except Exception as e:
+            return { 'error': str(e) }, 500
+        
 
 
 api.add_resource(EntryResource, '/')

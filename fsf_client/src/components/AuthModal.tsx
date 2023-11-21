@@ -1,17 +1,22 @@
 import React from "react";
 import * as Yup from 'yup';
-
-import { Formik, useFormik } from "formik";
-import { Modal, Box, ToggleButtonGroup, ToggleButton, TextField, Button, CircularProgress, Alert, Snackbar } from "@mui/material";
+import {
+  Modal, Box, ToggleButtonGroup,
+  ToggleButton, TextField, Alert,
+  CircularProgress, Snackbar
+} from "@mui/material";
+import { useFormik } from "formik";
 import { LoadingButton } from "@mui/lab";
 
+import { User } from "../interfaces";
+import { useStoreActions } from "../store/typedHooks";
+
 const style = {
-  position: 'absolute' as 'absolute',
+  position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
+  bgcolor: 'background.default',
   border: '2px solid #000',
   boxShadow: 24,
   pt: 2,
@@ -19,23 +24,20 @@ const style = {
   pb: 3,
   display: 'flex',
   flexDirection: 'column',
+  gap: 2,
+  borderRadius: '8px',
 };
 
 interface IAuthModal {
-  forceOpen: boolean;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const AuthModal = ({ forceOpen }: IAuthModal) => {
-  const [open, setOpen] = React.useState(forceOpen);
+export const AuthModal = ({ open, setOpen }: IAuthModal) => {
   const [alignment, setAlignment] = React.useState('signup');
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
+  const { setUser } = useStoreActions((action) => action);
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -52,17 +54,26 @@ export const AuthModal = ({ forceOpen }: IAuthModal) => {
     }),
     onSubmit: (values, { setSubmitting }) => {
       setTimeout(() => {
+        setError('');
+        setSuccess('');
         const loginUser = async () => {
-          const resp = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values),
-          })
-          if (resp.status === 200) {
-            handleClose();
+          try {
+            const resp = await fetch('/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(values),
+            })
+            const user = await resp.json() as User;
+            if (resp.status !== 200) {
+              setError('Error occured: try again.')
+              return;
+            }
+            setUser(user);
+            setSuccess('Successfully logged in!');
+            setOpen(false);
+          } catch (e) {
+            setError(String(e));
           }
-          const msg = await resp.json();
-          console.log(msg)
         }
 
         loginUser();
@@ -80,15 +91,29 @@ export const AuthModal = ({ forceOpen }: IAuthModal) => {
     }),
     onSubmit: (values, { setSubmitting }) => {
       setTimeout(() => {
-        const postUser = async () => {
-          const resp = await fetch('/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values),
-          })
+        setError('');
+        setSuccess('');
+        const signUser = async () => {
+          try {
+            const resp = await fetch('/api/signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(values),
+            })
+            const user = await resp.json() as User;
+            if (resp.status !== 200) {
+              setError('Error occured: try again.')
+              return;
+            }
+            setUser(user);
+            setSuccess('Successfully created an account!');
+            setOpen(false);
+          } catch (e) {
+            setError(String(e));
+          }
         }
 
-        postUser();
+        signUser();
         setSubmitting(false);
       }, 400);
     },
@@ -97,57 +122,56 @@ export const AuthModal = ({ forceOpen }: IAuthModal) => {
   return (
     <Modal
       open={open}
-      keepMounted
-      onClose={handleClose}
-      aria-labelledby="parent-modal-title"
-      aria-describedby="parent-modal-description"
+      onClose={() => {}}
+      aria-labelledby="user_authentication_modal"
+      aria-describedby="consists of login, signup form"
     >
       <>
-        <Box sx={{ ...style, width: 500, border: '0px solid red', gap: 1, borderRadius: '8px' }}>
+        <Box width={{ mobile: '90%', tablet: 400 }} sx={{ ...style }}>
           <ToggleButtonGroup
             color="primary"
             value={alignment}
             exclusive
             onChange={handleChange}
             aria-label="Platform"
+            size="small"
             sx={{ placeSelf: 'center' }}
           >
             <ToggleButton sx={{ width: 100, fontWeight: 600 }} value="signup">Signup</ToggleButton>
             <ToggleButton sx={{ width: 100, fontWeight: 600 }} value="login">Login</ToggleButton>
           </ToggleButtonGroup>
-          <Formik
-            initialValues={{ email: '', password: '' }}
-            onSubmit={(values, { setSubmitting }) => {
-              setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
-                setSubmitting(false);
-              }, 400);
-            }}
-          >
+          <Box>
             {alignment === 'login' ?
               <Box onSubmit={loginFormik.handleSubmit}
                 component='form'
                 display='grid'
                 width='100%'
-                gap={1}
+                gap={1.2}
               >
                 <TextField
+                  variant="outlined"
                   fullWidth
                   id="email"
                   name="email"
                   label="Email"
+                  type="email"
                   value={loginFormik.values.email}
                   onChange={loginFormik.handleChange}
                   error={loginFormik.errors.email ? true : false}
+                  helperText={loginFormik.errors.email}
                 />
                 <TextField
                   fullWidth
+                  variant="outlined"
                   id="password"
                   name="password"
                   label="Password"
+                  type="password"
                   value={loginFormik.values.password}
                   onChange={loginFormik.handleChange}
                   error={loginFormik.errors.password ? true : false}
+                  helperText={loginFormik.errors.password}
+
                 />
                 <LoadingButton loading={loginFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
                   <CircularProgress color="inherit" size={18} />
@@ -159,45 +183,53 @@ export const AuthModal = ({ forceOpen }: IAuthModal) => {
                 component='form'
                 display='grid'
                 width='100%'
-                gap={1}
+                gap={1.2}
               >
                 <TextField
                   fullWidth
+                  variant='outlined'
                   id="name"
                   name="name"
                   label="Name"
                   value={signupFormik.values.name}
                   onChange={signupFormik.handleChange}
                   error={signupFormik.errors.name ? true : false}
+                  helperText={signupFormik.errors.name}
                 />
                 <TextField
                   fullWidth
+                  variant="outlined"
                   id="email"
                   name="email"
                   label="Email"
                   value={signupFormik.values.email}
                   onChange={signupFormik.handleChange}
                   error={signupFormik.errors.email ? true : false}
+                  helperText={signupFormik.errors.email}
                 />
                 <TextField
                   fullWidth
+                  variant="outlined"
                   id="password"
                   name="password"
                   label="Password"
                   value={signupFormik.values.password}
                   onChange={signupFormik.handleChange}
                   error={signupFormik.errors.password ? true : false}
+                  helperText={signupFormik.errors.password}
                 />
-                <Button variant="contained" type="submit" color="secondary">
+                <LoadingButton loading={signupFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
+                  <CircularProgress color="inherit" size={18} />
+                }>
                   Submit
-                </Button>
+                </LoadingButton>
               </Box>
             }
-          </Formik>
+          </Box>
         </Box>
-        <Snackbar open={true} autoHideDuration={6000} onClose={handleClose}>
-          <Alert onClose={handleClose} severity="success" sx={{ width: { xs: '100%', md: '20%' } }}>
-            This is a success message!
+        <Snackbar open={Boolean(error) || Boolean(success)} autoHideDuration={2000}>
+          <Alert severity={error ? "error" : "success"} sx={{ width: { xs: '100%', md: '20%' } }}>
+            {error ? error : success}
           </Alert>
         </Snackbar>
       </>

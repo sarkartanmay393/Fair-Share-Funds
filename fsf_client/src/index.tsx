@@ -21,12 +21,12 @@ const store = createStore<GlobalStore>(globalStore);
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <StoreProvider store={store}>
+    <StoreProvider store={store}>
+      <ThemeProvider theme={theme}>
         <App />
         <CssBaseline enableColorScheme />
-      </StoreProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </StoreProvider>
   </React.StrictMode>
 );
 
