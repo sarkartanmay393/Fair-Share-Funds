@@ -1,5 +1,5 @@
 import random
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from flask_restful import Resource
 from mysqlx import IntegrityError
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity, verify_jwt_in_request
@@ -64,16 +64,14 @@ class LoginResource(Resource):
             user = User.query.filter_by(email=email).first()
             if user and  bc.check_password_hash(user.password, password):
                 access_token=create_access_token(identity=user.id, expires_delta=False)
-                response = {
+                response = Response({
                     'email': user.email,
                     'username': user.username,
                     'id': user.id,
                     'name': user.name
-                }
-                headers = {
-                    'Authorization': 'Bearer ' + access_token
-                }
-                return response , 200, headers
+                })
+                response.set_cookie('access_token', value=access_token, max_age=24 * 60 * 60)
+                return response
             else:
                 return {'error': 'user data not matched'}, 401
 

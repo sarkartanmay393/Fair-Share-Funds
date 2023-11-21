@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_restful import Api
@@ -18,7 +19,7 @@ db = SQLAlchemy(app, model_class=Base)
 jwt = JWTManager(app)
 api = Api(app)
 bc = Bcrypt(app)
-# migrate = Migrate(app, db)
+migrate = Migrate(app, db)
 
 from app import models, resources
 
