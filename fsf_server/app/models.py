@@ -19,6 +19,6 @@ class Room(db.Model):
     __tablename__ = 'rooms'
     id: Mapped[str] = mapped_column(String, primary_key=True, unique=True, default=str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String, nullable=False)
-    user_ids: Mapped[JSON] = mapped_column(JSON, nullable=True)
+    user_ids: Mapped[JSON] = mapped_column(JSON, nullable=False)
     history: Mapped[JSON] =  mapped_column(JSON, nullable=True)
-    balance_sheet: Mapped[JSON] =  mapped_column(JSON, nullable=True)
+    balance_sheet: Mapped[JSON] =  mapped_column(JSON, nullable=True) # this `bs` is local to Rooms, based on user_ids.
