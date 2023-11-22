@@ -47,6 +47,7 @@ const Theme = (mode: PaletteMode) => {
         tablet: 600,
         laptop: 1024,
         desktop: 1200,
+        bigdisplay: 2000,
       },
     },
     typography: {
@@ -151,6 +152,7 @@ declare module "@mui/material/styles" {
     tablet: true;
     laptop: true;
     desktop: true;
+    bigdisplay: true;
   }
 }
 

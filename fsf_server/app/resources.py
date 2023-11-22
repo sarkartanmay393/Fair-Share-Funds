@@ -227,6 +227,7 @@ class UserResource(Resource):
             if not user:
                 return {'error': 'no user found by the id'}, 401
             response = {
+                'id': user.id,
                 'name': user.name,
                 'rooms': user.rooms,
                 'email': user.email,

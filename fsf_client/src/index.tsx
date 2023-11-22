@@ -24,7 +24,6 @@ root.render(
     <StoreProvider store={store}>
       <ThemeProvider theme={theme}>
         <App />
-        <CssBaseline enableColorScheme />
       </ThemeProvider>
     </StoreProvider>
   </React.StrictMode>

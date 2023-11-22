@@ -2,14 +2,15 @@ import React from "react";
 import * as Yup from 'yup';
 import {
   Modal, Box, ToggleButtonGroup,
-  ToggleButton, TextField, Alert,
-  CircularProgress, Snackbar
+  ToggleButton, Alert,
+  Snackbar
 } from "@mui/material";
 import { useFormik } from "formik";
-import { LoadingButton } from "@mui/lab";
 
 import { User } from "../interfaces";
 import { useStoreActions } from "../store/typedHooks";
+import { LoginBox } from "./LoginBox";
+import { SignupBox } from "./SignupBox";
 
 const style = {
   position: 'absolute',
@@ -68,8 +69,8 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
               setError('Error occured: try again.')
               return;
             }
-            setUser(user);
             setSuccess('Successfully logged in!');
+            setUser(user);
             setOpen(false);
           } catch (e) {
             setError(String(e));
@@ -122,11 +123,11 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
   return (
     <Modal
       open={open}
-      onClose={() => {}}
+      onClose={() => { }}
       aria-labelledby="user_authentication_modal"
       aria-describedby="consists of login, signup form"
     >
-      <>
+      <React.Fragment>
         <Box width={{ mobile: '90%', tablet: 400 }} sx={{ ...style }}>
           <ToggleButtonGroup
             color="primary"
@@ -142,97 +143,17 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
           </ToggleButtonGroup>
           <Box>
             {alignment === 'login' ?
-              <Box onSubmit={loginFormik.handleSubmit}
-                component='form'
-                display='grid'
-                width='100%'
-                gap={1.2}
-              >
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  id="email"
-                  name="email"
-                  label="Email"
-                  type="email"
-                  value={loginFormik.values.email}
-                  onChange={loginFormik.handleChange}
-                  error={loginFormik.errors.email ? true : false}
-                  helperText={loginFormik.errors.email}
-                />
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  id="password"
-                  name="password"
-                  label="Password"
-                  type="password"
-                  value={loginFormik.values.password}
-                  onChange={loginFormik.handleChange}
-                  error={loginFormik.errors.password ? true : false}
-                  helperText={loginFormik.errors.password}
-
-                />
-                <LoadingButton loading={loginFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
-                  <CircularProgress color="inherit" size={18} />
-                }>
-                  Submit
-                </LoadingButton>
-              </Box> :
-              <Box onSubmit={signupFormik.handleSubmit}
-                component='form'
-                display='grid'
-                width='100%'
-                gap={1.2}
-              >
-                <TextField
-                  fullWidth
-                  variant='outlined'
-                  id="name"
-                  name="name"
-                  label="Name"
-                  value={signupFormik.values.name}
-                  onChange={signupFormik.handleChange}
-                  error={signupFormik.errors.name ? true : false}
-                  helperText={signupFormik.errors.name}
-                />
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  id="email"
-                  name="email"
-                  label="Email"
-                  value={signupFormik.values.email}
-                  onChange={signupFormik.handleChange}
-                  error={signupFormik.errors.email ? true : false}
-                  helperText={signupFormik.errors.email}
-                />
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  id="password"
-                  name="password"
-                  label="Password"
-                  value={signupFormik.values.password}
-                  onChange={signupFormik.handleChange}
-                  error={signupFormik.errors.password ? true : false}
-                  helperText={signupFormik.errors.password}
-                />
-                <LoadingButton loading={signupFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
-                  <CircularProgress color="inherit" size={18} />
-                }>
-                  Submit
-                </LoadingButton>
-              </Box>
+              <LoginBox loginFormik={loginFormik} /> :
+              <SignupBox signupFormik={signupFormik} />
             }
           </Box>
         </Box>
-        <Snackbar open={Boolean(error) || Boolean(success)} autoHideDuration={2000}>
+        <Snackbar open={Boolean(error) || Boolean(success)} autoHideDuration={3000}>
           <Alert severity={error ? "error" : "success"} sx={{ width: { xs: '100%', md: '20%' } }}>
             {error ? error : success}
           </Alert>
         </Snackbar>
-      </>
+      </React.Fragment>
     </Modal >
   );
 }
