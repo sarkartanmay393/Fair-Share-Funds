@@ -1,12 +1,5 @@
-import { action } from "easy-peasy";
-import { GlobalStore, User } from "../interfaces";
+import { GlobalStore } from "../interfaces";
 
-const globalStore: GlobalStore = {
-  user: null,
-
-  setUser: action((state, payload: User) => {
-    state.user = payload;
-  }),
-};
+const globalStore: GlobalStore = {};
 
 export default globalStore;

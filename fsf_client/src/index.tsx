@@ -7,9 +7,10 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import App from './App';
 import Theme from './theme/theme';
 import reportWebVitals from './reportWebVitals';
-import { StoreProvider, createStore } from 'easy-peasy';
-import globalStore from './store/globalStore';
-import { GlobalStore } from './interfaces';
+import SupabaseContextProvider from './provider/supabase/provider';
+// import { StoreProvider, createStore } from 'easy-peasy';
+// import globalStore from './store/globalStore';
+// import { GlobalStore } from './interfaces';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -17,15 +18,15 @@ const root = ReactDOM.createRoot(
 
 const mode = 'dark';
 const theme = createTheme(Theme(mode));
-const store = createStore<GlobalStore>(globalStore);
 
 root.render(
   <React.StrictMode>
-    <StoreProvider store={store}>
-      <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline enableColorScheme />
+      <SupabaseContextProvider>
         <App />
-      </ThemeProvider>
-    </StoreProvider>
+      </SupabaseContextProvider>s
+    </ThemeProvider>
   </React.StrictMode>
 );
 

@@ -7,10 +7,10 @@ import {
 } from "@mui/material";
 import { useFormik } from "formik";
 
-import { User } from "../interfaces";
-import { useStoreActions } from "../store/typedHooks";
 import { LoginBox } from "./LoginBox";
 import { SignupBox } from "./SignupBox";
+import { useSupabaseContext } from "../provider/supabase/provider";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 const style = {
   position: 'absolute',
@@ -38,12 +38,13 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
   const [alignment, setAlignment] = React.useState('signup');
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
-  const { setUser } = useStoreActions((action) => action);
+  const supabase = useSupabaseContext().supabase as SupabaseClient<any, "public", any>;
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
     newAlignment: string,
   ) => {
+    event.preventDefault();
     setAlignment(newAlignment);
   };
 
@@ -59,24 +60,20 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
         setSuccess('');
         const loginUser = async () => {
           try {
-            const resp = await fetch('/api/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(values),
-            })
-            const user = await resp.json() as User;
-            if (resp.status !== 200) {
-              setError('Error occured: try again.')
+            const resp = await supabase.auth.signInWithPassword({
+              ...values
+            });
+            if (resp.error) {
+              setError(resp.error.message);
               return;
             }
+
             setSuccess('Successfully logged in!');
-            setUser(user);
             setOpen(false);
           } catch (e) {
             setError(String(e));
           }
         }
-
         loginUser();
         setSubmitting(false);
       }, 400);
@@ -96,17 +93,14 @@ export const AuthModal = ({ open, setOpen }: IAuthModal) => {
         setSuccess('');
         const signUser = async () => {
           try {
-            const resp = await fetch('/api/signup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(values),
-            })
-            const user = await resp.json() as User;
-            if (resp.status !== 200) {
-              setError('Error occured: try again.')
+            const resp = await supabase.auth.signUp({
+              ...values
+            });
+            if (resp.error) {
+              setError(resp.error.message);
               return;
             }
-            setUser(user);
+
             setSuccess('Successfully created an account!');
             setOpen(false);
           } catch (e) {

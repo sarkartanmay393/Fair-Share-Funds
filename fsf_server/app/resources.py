@@ -214,8 +214,6 @@ class UserResource(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
         
-
-
     def get(self):
         ck = request.cookies
         if not ck:

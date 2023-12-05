@@ -1,25 +1,20 @@
-
-import { AuthModal } from "./components/AuthModal";
-import { useUser } from "./utils/useUser";
 import Layout from "./layout/layout";
+import { Container } from "@mui/material";
+import { useState } from "react";
+import { useSupabaseContext } from "./provider/supabase/provider";
+import { AuthModal } from "./components/AuthModal";
 import Homepage from "./pages/Home.page";
-import { Container, CssBaseline } from "@mui/material";
-import React from "react";
 
 function App() {
-  const { isAuthenticated } = useUser();
-  const [open, setOpen] = React.useState(!isAuthenticated);
+  const { user } = useSupabaseContext();
+  const [showAuthModal, setShowAuthModal] = useState(user?.id === undefined);
 
   return (
     <Container maxWidth='bigdisplay'>
-      <CssBaseline enableColorScheme />
       <Layout>
-        <React.Fragment>
-          {isAuthenticated
-            ? <Homepage />
-            : <AuthModal open={open} setOpen={setOpen} />
-          }
-        </React.Fragment>
+        {showAuthModal ?
+          <AuthModal open={showAuthModal} setOpen={setShowAuthModal} />
+          : <Homepage />}
       </Layout>
     </Container>
   );

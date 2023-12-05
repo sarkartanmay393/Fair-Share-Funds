@@ -1,0 +1,11 @@
+{
+  "name": "fairsharefunds",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "dev": "concurrently 'cd fsf_server && . .venv/bin/activate && flask run' 'cd fsf_client && npm start'"
+  },
+  "keywords": [],
+  "author": "Tanmay Sarkar",
+  "license": "ISC"
+}

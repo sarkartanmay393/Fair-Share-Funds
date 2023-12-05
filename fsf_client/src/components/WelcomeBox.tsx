@@ -1,34 +1,32 @@
 import React from "react";
 import { LoadingButton } from "@mui/lab";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useUser } from "../utils/useUser";
+import { useSupabaseContext } from "../provider/supabase/provider";
 
 interface IWelcomeBox {
   isLoading: boolean;
-  handleOpenBoard: React.MouseEventHandler<HTMLButtonElement>;
+  handleOpenBoard?: React.MouseEventHandler<HTMLButtonElement>;
 
 }
 
-export const WelcomeBox = ({
-  isLoading,
-  handleOpenBoard }: IWelcomeBox
-) => {
-  const { user } = useUser();
+export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
+  const { user } = useSupabaseContext();
 
   return (
-    <React.Fragment>
+    <Box>
       <Typography fontSize={32}>
-        Hi, {user?.name}
+        Hi, {user?.email?.split('@')[0]}
       </Typography>
-      <LoadingButton
+      {/* <LoadingButton
+        href="room"
         loading={isLoading}
-        onClick={handleOpenBoard}
         variant="outlined"
         size="large"
         sx={{ fontSize: '1rem', fontWeight: 600, }}
       >
         Open Board
-      </LoadingButton>
-    </React.Fragment>
+      </LoadingButton> */}
+    </Box>
   );
 }

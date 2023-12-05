@@ -2,7 +2,6 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 
 import { WhiteBoard } from "../components/WhiteBoard";
-import { WelcomeBox } from "../components/WelcomeBox";
 
 const styles = {
   container: {
@@ -30,18 +29,18 @@ const styles = {
   },
 }
 
-export default function Homepage() {
+export default function RoomPage() {
   const [isLoading, setIsLoading] = React.useState(false);
 
   return (
     <Box sx={{ ...styles.container }}>
       <Box sx={{ ...styles.header }}>
         <Typography fontSize={24} fontWeight={600}>
-          Fair Share Funds
+          Rooms1
         </Typography>
       </Box>
       <Box sx={{ ...styles.body }}>
-        <WelcomeBox isLoading={isLoading} />
+        <WhiteBoard />
       </Box>
     </Box>
   );
