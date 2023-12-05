@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import WhiteboardBG from '../assets/board-bg-white.png'
+import { useParams } from "react-router-dom";
 
 const style = {
   width: '100%',
@@ -13,10 +14,10 @@ const style = {
   backgroundImage: `url(${WhiteboardBG})`
 };
 
-interface IWhiteBoard {
-}
+// interface WhiteBoardProps { }
 
-export const WhiteBoard = ({ }: IWhiteBoard) => {
+export const WhiteBoard = () => {
+  const { id } = useParams();
 
   return (
     <Box sx={{ ...style }}>

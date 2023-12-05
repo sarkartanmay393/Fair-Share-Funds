@@ -8,9 +8,6 @@ import App from './App';
 import Theme from './theme/theme';
 import reportWebVitals from './reportWebVitals';
 import SupabaseContextProvider from './provider/supabase/provider';
-// import { StoreProvider, createStore } from 'easy-peasy';
-// import globalStore from './store/globalStore';
-// import { GlobalStore } from './interfaces';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
