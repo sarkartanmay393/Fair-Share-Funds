@@ -1,22 +1,28 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  username: string;
-  rooms_id: string[];
-}
-
-export interface Room {
-  id: string;
-  name: string;
-  users_id: string[];
-  balance_sheet: BalanceSheet;
-  transactions: Transaction[];
-}
+import { Database } from "../utils/supabase/types";
 
 export enum TransactionType {
   Pay = "Pay",
   Due = "Due",
+}
+
+type a = Database["public"]["Tables"]["rooms"]["Row"];
+export interface User {
+  id: string;
+  email: string | null;
+  name: string | null;
+  rooms_id: string[] | null;
+  username: string | null;
+}
+
+export interface Room {
+  created_by: string;
+  id: number;
+  last_updated: string;
+  master_sheet: string;
+  name: string | null;
+  slug: string;
+  transactions_id: number[];
+  users_id: string[];
 }
 
 // Transaction can be used in making History of a room
@@ -26,7 +32,7 @@ export interface Transaction {
   from: string; // can use username or email
   to: string; // can use username or email
   time: Date;
-  ammount: number;
+  amount: number;
   type: TransactionType;
   room_id: string;
   sheet_id?: string; // if not exists, we know its normal transaction on history

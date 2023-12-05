@@ -7,6 +7,7 @@ import { Snackbar, ToggleButton, Alert, Box, ToggleButtonGroup } from "@mui/mate
 import { LoginBox } from "../components/LoginBox";
 import { SignupBox } from "../components/SignupBox";
 import { useSupabaseContext } from "../provider/supabase/provider";
+import { useNavigate } from "react-router-dom";
 
 const style = {
   position: 'absolute',
@@ -29,7 +30,8 @@ export const AuthModal = () => {
   const [alignment, setAlignment] = React.useState('signup');
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
-  const supabase = useSupabaseContext().supabase as SupabaseClient<any, "public", any>;
+  const { user, supabase } = useSupabaseContext();
+  const navigate = useNavigate();
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -51,15 +53,16 @@ export const AuthModal = () => {
         setSuccess('');
         const loginUser = async () => {
           try {
-            const resp = await supabase.auth.signInWithPassword({
+            const resp = await supabase?.auth.signInWithPassword({
               ...values
             });
-            if (resp.error) {
+            if (resp && resp.error) {
               setError(resp.error.message);
               return;
             }
 
             setSuccess('Successfully logged in!');
+            navigate('/');
           } catch (e) {
             setError(String(e));
           }
@@ -83,10 +86,10 @@ export const AuthModal = () => {
         setSuccess('');
         const signUser = async () => {
           try {
-            const resp = await supabase.auth.signUp({
+            const resp = await supabase?.auth.signUp({
               ...values
             });
-            if (resp.error) {
+            if (resp && resp.error) {
               setError(resp.error.message);
               return;
             }
@@ -102,6 +105,10 @@ export const AuthModal = () => {
       }, 400);
     },
   });
+
+  if (user?.id) {
+    navigate(-1);
+  }
 
   return (
     <React.Fragment>

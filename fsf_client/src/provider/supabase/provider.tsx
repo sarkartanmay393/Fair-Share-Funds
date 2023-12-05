@@ -1,14 +1,24 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
-import { type User } from "@supabase/supabase-js";
 
 import { SupabaseContext } from "../supabase/context";
-import supabase from "../../utils/supabase";
+import supabase from "../../utils/supabase/supabase";
 import { useLocalStorage } from "../../utils/localstorage";
+import { User } from "../../interfaces";
 
 export default function SupabaseContextProvider({ children }: { children: ReactNode }) {
   const localUser = (useLocalStorage())?.user;
+  const dummyUser = {
+    id: '',
+    name: '',
+    email: '',
+    username: '',
+    rooms_id: [],
+  } as User;
 
-  const [user, setUser] = useState<User | undefined>(localUser);
+  const [user, setUser] = useState<User | undefined>(localUser && {
+    ...dummyUser,
+    id: localUser.id
+  });
   const [error, setError] = useState("");
 
   const initializeUser = async () => {
@@ -18,7 +28,7 @@ export default function SupabaseContextProvider({ children }: { children: ReactN
       setUser(undefined);
     } else {
       setError('');
-      setUser(userResponse.data.user);
+      setUser({ ...dummyUser, id: userResponse.data.user.id });
     }
   };
 

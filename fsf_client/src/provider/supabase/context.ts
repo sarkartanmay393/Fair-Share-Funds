@@ -1,5 +1,6 @@
 import { createContext } from "react";
-import { type SupabaseClient, type User } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { User } from "../../interfaces";
 
 type SupabaseContextType = {
   supabase: SupabaseClient<any, "public", any> | undefined;

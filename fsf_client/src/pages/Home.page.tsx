@@ -1,10 +1,8 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
-
-import { WhiteBoard } from "../components/WhiteBoard";
+import { Box, SxProps, Theme, Typography } from "@mui/material";
 import { WelcomeBox } from "../components/WelcomeBox";
 
-const styles = {
+const styles: { [key: string]: SxProps<Theme> } = {
   container: {
     width: '100%',
     height: '100%',
@@ -27,7 +25,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     gap: '1rem',
-  },
+  }
 }
 
 export default function Homepage() {
@@ -36,7 +34,7 @@ export default function Homepage() {
   return (
     <Box sx={{ ...styles.container }}>
       <Box sx={{ ...styles.header }}>
-        <Typography fontSize={24} fontWeight={600}>
+        <Typography fontSize={{ xs: 18, sm: 24 }} fontWeight={600}>
           Fair Share Funds
         </Typography>
       </Box>

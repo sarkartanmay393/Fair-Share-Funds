@@ -43,11 +43,12 @@ const Theme = (mode: PaletteMode) => {
     },
     breakpoints: {
       values: {
-        mobile: 0,
-        tablet: 600,
-        laptop: 1024,
-        desktop: 1200,
-        bigdisplay: 2000,
+        xs: 0,
+        sm: 420,
+        md: 680,
+        lg: 920,
+        xl: 1200,
+        big: 2000,
       },
     },
     typography: {
@@ -143,16 +144,12 @@ declare module "@mui/material/styles" {
     };
   }
   interface BreakpointOverrides {
-    xs: false;
-    sm: false;
-    md: false;
-    lg: false;
-    xl: false;
-    mobile: true;
-    tablet: true;
-    laptop: true;
-    desktop: true;
-    bigdisplay: true;
+    xs: true;
+    sm: true;
+    md: true;
+    lg: true;
+    xl: true;
+    big: true; // 2000
   }
 }
 

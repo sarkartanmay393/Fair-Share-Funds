@@ -6,23 +6,23 @@ import Homepage from "./pages/Home.page";
 import { AuthModal } from "./pages/Auth.page";
 import { useSupabaseContext } from "./provider/supabase/provider";
 import { WhiteBoard } from "./components/WhiteBoard";
+import RoomPage from "./pages/Room.page";
 
 function App() {
   const { user } = useSupabaseContext();
 
   return (
-    <Container maxWidth='bigdisplay'>
-      <Layout>
-        <BrowserRouter>
-          {user?.id === undefined && <Navigate to='/auth' />}
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/auth" element={<AuthModal />} />
-            <Route path="/room/:id" element={<WhiteBoard />} />
-          </Routes>
-        </BrowserRouter>
-      </Layout>
-    </Container>
+    <Layout>
+      <BrowserRouter>
+        {user?.id === undefined && <Navigate to='/auth' />}
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/auth" element={<AuthModal />} />
+          {/* <Route path="/rooms" element={<RoomPage />} /> */}
+          <Route path="/room/:slug" element={<RoomPage />} />
+        </Routes>
+      </BrowserRouter>
+    </Layout>
   );
 }
 

@@ -1,7 +1,13 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
+import React, { useEffect } from "react";
+import { Box, CircularProgress, Input, Typography } from "@mui/material";
 
 import { WhiteBoard } from "../components/WhiteBoard";
+import CustomizedSelects from "../components/Room/Input";
+import InputBar from "../components/Room/Input";
+import { useSupabaseContext } from "../provider/supabase/provider";
+import { useNavigate, useParams } from "react-router-dom";
+import { Room } from "../interfaces";
+import { Database } from "../utils/supabase/types";
 
 const styles = {
   container: {
@@ -30,18 +36,48 @@ const styles = {
 }
 
 export default function RoomPage() {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { slug } = useParams();
+  const [data, setData] = React.useState<Room>();
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { user, supabase } = useSupabaseContext();
+  const navigate = useNavigate();
+
+
+  const fetch = async () => {
+    if (user && supabase) {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.from('rooms').select().eq('slug', slug);
+        const dt = data && data[0] as Database["public"]['Tables']['rooms']['Row'];
+        if (error?.code !== '201' || (dt && !dt.users_id.includes(user.id))) {
+          navigate('/');
+          return;
+        }
+        if (dt) { setData({ ...dt, master_sheet: JSON.stringify(dt.master_sheet) }) }
+        setIsLoading(false);
+      } catch (e) { }
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetch();
+  }, [])
+
 
   return (
-    <Box sx={{ ...styles.container }}>
-      <Box sx={{ ...styles.header }}>
-        <Typography fontSize={24} fontWeight={600}>
-          Rooms1
-        </Typography>
-      </Box>
-      <Box sx={{ ...styles.body }}>
-        <WhiteBoard />
-      </Box>
-    </Box>
+    <>
+      {isLoading ? <CircularProgress /> :
+        (data && (<Box sx={{ ...styles.container }}>
+          <Box sx={{ ...styles.header }}>
+            <Typography fontSize={24} fontWeight={600}>
+              {data.name}
+            </Typography>
+          </Box>
+          <Box sx={{ ...styles.body, border: 'px solid red' }}>
+            <InputBar styles={{ border: '1px solid red', position: 'fixed', bottom: 0 }} />
+          </Box>
+        </Box>))}
+    </>
   );
 }
