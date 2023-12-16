@@ -1,13 +1,12 @@
 import { createContext } from "react";
-import { type SupabaseClient } from "@supabase/supabase-js";
-import { User } from "../../interfaces";
+import { type Session, type SupabaseClient } from "@supabase/supabase-js";
 
 type SupabaseContextType = {
   supabase: SupabaseClient<any, "public", any> | undefined;
-  user: User | undefined;
+  session: Session | null;
 };
 
 export const SupabaseContext = createContext<SupabaseContextType>({
   supabase: undefined,
-  user: undefined,
+  session: null,
 });

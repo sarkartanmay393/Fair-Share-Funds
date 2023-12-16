@@ -13,7 +13,8 @@ const Theme = (mode: PaletteMode) => {
               // light: "rgba(255, 255, 255, 0.2)",
             },
             secondary: {
-              main: "#109c51",
+              main: "#1959d1",
+              // main: "#109c51",
             },
             text: {
               primary: common.white,

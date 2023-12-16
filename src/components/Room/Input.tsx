@@ -6,7 +6,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import NativeSelect from '@mui/material/NativeSelect';
 import InputBase from '@mui/material/InputBase';
-import { Avatar, Box } from '@mui/material';
+import { Avatar, Box, Button, IconButton, Input } from '@mui/material';
+import { Send } from '@mui/icons-material';
 
 const BootstrapInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -52,40 +53,45 @@ export default function InputBar({ styles, usersId }: InputProps) {
     setAge(event.target.value);
   };
   return (
-    <Box sx={{ ...styles, width: '100%' }}>
-      <Select
-        id="demo-customized-select"
-        value={age}
-        defaultValue={age}
-        onChange={handleChange}
-        sx={{ border: 0, outline: 0, boxShadow: 0, '&:hover': { border: 0, outline: 0, boxShadow: 0 } }}
-      >
-        <MenuItem value="0">
-          <Avatar>None</Avatar>
-        </MenuItem>
-        <MenuItem value={12}>
-          <Avatar>P</Avatar>
-        </MenuItem>
-        <MenuItem value={20}>
-          <Avatar>D</Avatar>
-        </MenuItem>
-        <MenuItem value={30}>
-          <Avatar>R</Avatar>
-        </MenuItem>
-      </Select>
-      <NativeSelect
-        id="demo-customized-select-native"
-        value={age}
-        onChange={handleChange}
-        variant='outlined'
-        sx={{ outline: 0, border: 0 }}
-      >
-        <option value="paid">Paid</option>
-        <option value="due">Due</option>
-      </NativeSelect>
-      <FormControl sx={{ m: 1 }} variant="standard">
-        <InputLabel htmlFor="demo-customized-textbox">Age</InputLabel>
-      </FormControl>
-    </Box>
+    <Box sx={{ ...styles, width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+      <Box display='flex' justifyContent='space-evenly' gap={1} >
+        <Select
+          id="demo-customized-select"
+          value={age}
+          defaultValue={age}
+          onChange={handleChange}
+          sx={{ border: 0, outline: 0, boxShadow: 0, '&:hover': { border: 0, outline: 0, boxShadow: 0 } }}
+        >
+          <MenuItem value="0">
+
+            <Avatar>None</Avatar>
+          </MenuItem>
+          <MenuItem value={12}>
+            <Avatar>P</Avatar>
+          </MenuItem>
+          <MenuItem value={20}>
+            <Avatar>D</Avatar>
+          </MenuItem>
+          <MenuItem value={30}>
+            <Avatar>R</Avatar>
+          </MenuItem>
+        </Select>
+        <NativeSelect
+          id="demo-customized-select-native"
+          value={age}
+          onChange={handleChange}
+          variant='outlined'
+          sx={{ outline: 0, border: 0 }}
+        >
+          <option value="paid">Paid</option>
+          <option value="due">Due</option>
+        </NativeSelect>
+        <FormControl sx={{ m: 1 }} variant="standard">
+          <InputLabel htmlFor="demo-customized-textbox">Age</InputLabel>
+          <Input />
+        </FormControl>
+      </Box>
+      <IconButton> <Send /></IconButton>
+    </Box >
   );
 }

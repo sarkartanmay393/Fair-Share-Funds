@@ -1,11 +1,12 @@
-import { Database } from "../utils/supabase/types";
+// import { Database } from "../utils/supabase/types";
+
+import { Action } from "easy-peasy";
 
 export enum TransactionType {
   Pay = "Pay",
   Due = "Due",
 }
 
-type a = Database["public"]["Tables"]["rooms"]["Row"];
 export interface User {
   id: string;
   email: string | null;
@@ -16,7 +17,7 @@ export interface User {
 
 export interface Room {
   created_by: string;
-  id: number;
+  id: string;
   last_updated: string;
   master_sheet: string;
   name: string | null;
@@ -45,4 +46,12 @@ export interface BalanceSheet {
   sheet: Transaction[]; // transaction.length==users_count
 }
 
-export interface GlobalStore {}
+export interface GlobalStore {
+  user: User | null;
+  appbarTitle: string;
+  rooms: Room[] | null;
+
+  setUser: Action<GlobalStore, User | null>;
+  setAppbarTitle: Action<GlobalStore, string>;
+  setRooms: Action<GlobalStore, Room[] | null>;
+}

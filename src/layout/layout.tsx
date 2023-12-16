@@ -1,4 +1,8 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
+import { useStoreState } from "../store/typedHooks";
+import { useSupabaseContext } from "../provider/supabase/provider";
+import { useUserSyncronizer } from "../utils/useUserSyncronizer";
+import CustomAppbar from "../components/CustomAppbar";
 
 interface ILayout {
   children: JSX.Element;
@@ -13,10 +17,13 @@ function Layout({ children }: ILayout) {
       bgcolor='background.paper'
       display='flex'
       flexDirection='column'
-      justifyContent='center'
       alignItems='center'
+      overflow='hidden'
     >
-      {children}
+      <CustomAppbar />
+      <Box height='100%' width='100%' display='flex' alignItems='center'>
+        {children}
+      </Box>
     </Box>
   );
 }

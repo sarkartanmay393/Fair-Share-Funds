@@ -8,6 +8,8 @@ import App from './App';
 import Theme from './theme/theme';
 import reportWebVitals from './reportWebVitals';
 import SupabaseContextProvider from './provider/supabase/provider';
+import { StoreProvider, createStore } from 'easy-peasy';
+import globalStore from './store/globalStore';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -15,14 +17,17 @@ const root = ReactDOM.createRoot(
 
 const mode = 'dark';
 const theme = createTheme(Theme(mode));
+const store = createStore(globalStore);
 
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
       <SupabaseContextProvider>
-        <App />
-      </SupabaseContextProvider>s
+        <StoreProvider store={store}>
+          <App />
+        </StoreProvider>
+      </SupabaseContextProvider>
     </ThemeProvider>
   </React.StrictMode>
 );
