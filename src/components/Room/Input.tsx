@@ -6,7 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import NativeSelect from '@mui/material/NativeSelect';
 import InputBase from '@mui/material/InputBase';
-import { Avatar, Box, Button, IconButton, Input } from '@mui/material';
+import { Avatar, Box, Button, IconButton, Input, TextField } from '@mui/material';
 import { Send } from '@mui/icons-material';
 
 const BootstrapInput = styled(InputBase)(({ theme }) => ({
@@ -81,17 +81,18 @@ export default function InputBar({ styles, usersId }: InputProps) {
           value={age}
           onChange={handleChange}
           variant='outlined'
-          sx={{ outline: 0, border: 0 }}
+          sx={{ outline: 0, border: 0, width: "120px" }}
         >
           <option value="paid">Paid</option>
           <option value="due">Due</option>
         </NativeSelect>
         <FormControl sx={{ m: 1 }} variant="standard">
-          <InputLabel htmlFor="demo-customized-textbox">Age</InputLabel>
-          <Input />
+          {/* <InputLabel htmlFor="demo-customized-textbox">Amount</InputLabel>
+          <Input /> */}
+          <TextField id="outlined-basic" label="Amount" variant="outlined" sx={{padding: "0px"}} />
         </FormControl>
       </Box>
-      <IconButton> <Send /></IconButton>
+      <IconButton> <Send sx={{fontSize: "18px"}} /></IconButton>
     </Box >
   );
 }
