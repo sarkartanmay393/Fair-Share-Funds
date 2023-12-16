@@ -6,7 +6,8 @@ import { type Session } from "@supabase/supabase-js";
 
 
 export default function SupabaseContextProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(JSON.parse((localStorage).getItem('sb-jawvorkhuixgggewwkxn-auth-token') || "") || null);
+  const localSession = localStorage.getItem('sb-jawvorkhuixgggewwkxn-auth-token');
+  const [session, setSession] = useState<Session | null>(localSession ? JSON.parse(localSession) : null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

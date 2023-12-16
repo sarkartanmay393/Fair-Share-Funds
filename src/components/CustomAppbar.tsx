@@ -18,12 +18,13 @@ import Logo from '../assets/logo.png';
 interface AppbarProps { }
 
 export default function CustomAppbar() {
-  const { session } = useSupabaseContext();
+  const { session, supabase } = useSupabaseContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const { appbarTitle } = useStoreState((state) => state);
 
   const handleClose = () => setAnchorEl(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const signOut = async () => await supabase?.auth.signOut();
 
   return (
     <AppBar position="fixed">
@@ -72,7 +73,7 @@ export default function CustomAppbar() {
               onClose={handleClose}
             >
               <MenuItem disabled onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>Log Out</MenuItem>
+              <MenuItem onClick={signOut}>Log Out</MenuItem>
             </Menu>
           </div> :
           <Button variant='text'>Login</Button>}
