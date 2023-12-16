@@ -17,7 +17,7 @@ export default function SupabaseContextProvider({ children }: { children: ReactN
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_UPDATED') {
+      if (event) {
         setSession(session)
       }
     })

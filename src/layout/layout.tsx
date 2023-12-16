@@ -3,9 +3,10 @@ import { useStoreState } from "../store/typedHooks";
 import { useSupabaseContext } from "../provider/supabase/provider";
 import { useUserSyncronizer } from "../utils/useUserSyncronizer";
 import CustomAppbar from "../components/CustomAppbar";
+import React from "react";
 
 interface ILayout {
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 function Layout({ children }: ILayout) {

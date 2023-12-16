@@ -13,18 +13,21 @@ function App() {
   const { isLoading } = useUserSyncronizer();
 
   return (
-    <Layout>
-      {isLoading ? <CircularProgress /> :
-        <BrowserRouter>
-          {session === null && <Navigate to='/auth' />}
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            {/* <Route path="/rooms" element={<RoomPage />} /> */}
-            <Route path="/room/:id" element={<RoomPage />} />
-          </Routes>
-        </BrowserRouter>}
-    </Layout>
+    <BrowserRouter>
+      <Layout>
+        {isLoading ? <CircularProgress /> :
+          <>
+            {session === null && <Navigate to='/auth' />}
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              {/* <Route path="/rooms" element={<RoomPage />} /> */}
+              <Route path="/room/:id" element={<RoomPage />} />
+            </Routes>
+          </>
+        }
+      </Layout>
+    </BrowserRouter>
   );
 }
 

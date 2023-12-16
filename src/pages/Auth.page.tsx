@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import * as Yup from 'yup';
 import { useFormik } from "formik";
 import { ToggleButton, Alert, Box, ToggleButtonGroup } from "@mui/material";
@@ -30,7 +30,7 @@ const style = {
 export const AuthPage = () => {
   const [alignment, setAlignment] = React.useState('login');
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
+  const [success, setSuccess] = React.useState({ message: '', spec: '' });
   const { supabase, session } = useSupabaseContext();
   const { setUser } = useStoreActions((a) => a);
 
@@ -44,8 +44,6 @@ export const AuthPage = () => {
     setAlignment(newAlignment);
   };
 
-  const navigateToHome = () => navigate("/");
-
   const loginFormik = useFormik({
     initialValues: { email: '', password: '' },
     validationSchema: Yup.object().shape({
@@ -55,7 +53,7 @@ export const AuthPage = () => {
     onSubmit: (values, { setSubmitting }) => {
       setTimeout(() => {
         setError('');
-        setSuccess('');
+        setSuccess({ spec: '', message: '' });
 
         const loginUser = async () => {
           try {
@@ -67,8 +65,7 @@ export const AuthPage = () => {
               return;
             }
 
-            setSuccess('Successfully logged in!');
-            navigateToHome();
+            setSuccess({ spec: 'login', message: 'Successfully logged in!' });
           } catch (e) {
             setError(String(e));
           }
@@ -90,7 +87,7 @@ export const AuthPage = () => {
     onSubmit: (values, { setSubmitting }) => {
       setTimeout(() => {
         setError('');
-        setSuccess('');
+        setSuccess(() => ({ spec: '', message: '' }));
 
         const signUser = async () => {
           try {
@@ -102,7 +99,7 @@ export const AuthPage = () => {
               setError(resp.error.message);
               return;
             }
-            setSuccess('Successfully created an account!');
+            setSuccess(() => ({ spec: 'signup', message: 'Successfully created an account!' }));
 
             const newUser: User = {
               name: values.name,
@@ -138,6 +135,12 @@ export const AuthPage = () => {
     },
   });
 
+  useEffect(() => {
+    if (success.spec === 'login') {
+      navigate('/');
+    }
+  }, [success]);
+
   // if (session?.user.id) {
   //   navigate(-1);
   // }
@@ -169,8 +172,8 @@ export const AuthPage = () => {
       {error && <Alert severity="error" sx={{ width: { xs: '100%', md: '20%' }, position: 'absolute', bottom: 0, left: 0 }}>
         {error}
       </Alert>}
-      {success && <Alert severity="success" sx={{ width: { xs: '100%', md: '20%' }, position: 'absolute', bottom: 0, left: 0 }}>
-        {success}
+      {success.message && <Alert severity="success" sx={{ width: { xs: '100%', md: '20%' }, position: 'absolute', bottom: 0, left: 0 }}>
+        {success.message}
       </Alert>}
       {/* </Snackbar> */}
     </React.Fragment>

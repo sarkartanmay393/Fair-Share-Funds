@@ -14,17 +14,22 @@ import { useSupabaseContext } from '../provider/supabase/provider';
 import { Button } from '@mui/material';
 
 import Logo from '../assets/logo.png';
-
-interface AppbarProps { }
+import { useNavigate } from 'react-router-dom';
 
 export default function CustomAppbar() {
   const { session, supabase } = useSupabaseContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const { appbarTitle } = useStoreState((state) => state);
+  const navigate = useNavigate();
 
   const handleClose = () => setAnchorEl(null);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
-  const signOut = async () => await supabase?.auth.signOut();
+  const signOut = async () => {
+    const resp = await supabase?.auth.signOut();
+    if (!resp?.error) {
+      navigate('/auth');
+    }
+  };
 
   return (
     <AppBar position="fixed">

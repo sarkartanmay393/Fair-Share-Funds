@@ -14,11 +14,11 @@ export const useUserSyncronizer = () => {
     const fetchUserDetails = async () => {
       setIsLoading(true);
       try {
-        const supaUser = await supabase.auth.getUser();
+        const sessionResp = await supabase.auth.getSession();
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", supaUser.data.user?.id)
+          .eq("id", sessionResp.data.session?.user.id)
           .single();
         if (error) {
           setIsLoading(false);
