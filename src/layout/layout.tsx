@@ -22,7 +22,12 @@ function Layout({ children }: ILayout) {
       overflow='hidden'
     >
       <CustomAppbar />
-      <Box height='100%' width='100%' display='flex' alignItems='center'>
+      <Box
+        height={{ xs: 'calc(100vh-60px)', sm: 'calc(100vh-64px)' }}
+        width='100vw'
+        display='flex'
+        alignItems='center'
+      >
         {children}
       </Box>
     </Box>

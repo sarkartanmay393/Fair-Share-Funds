@@ -37,9 +37,10 @@ const randomRoomName = () => {
   return names[Math.round(Math.abs(Math.random() - 0.5) * 10) % names.length];
 }
 
-export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
+export const WelcomeBox = () => {
   const { session, supabase } = useSupabaseContext();
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const { user, rooms } = useStoreState((state) => state);
   const { setRooms } = useStoreActions((act) => act);
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
   // Creates a new rooms in db and add the room id to current user
   const handleNewRoom = () => {
     const triggerNewRoomCreation = async () => {
-      setLoading(true);
+      setIsLoading(true);
       try {
         const name = randomRoomName();
         const newroom = {
@@ -62,7 +63,7 @@ export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
 
         const { data, error } = await supabase!.from('rooms').insert(newroom).select().single();
         if (error) {
-          setLoading(false);
+          setIsLoading(false);
           console.log(error?.message);
           return;
         }
@@ -78,14 +79,14 @@ export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
           rooms_id: currentRoomsOfUser,
         }).eq('id', user!.id);
         if (resp.status !== 204) {
-          setLoading(false);
+          setIsLoading(false);
           console.log(resp.error?.message);
           return;
+        } else {
+          navigate(`/room/${data.id}`);
         }
-
-        navigate(`/rooms/${data.id}`)
       } catch (e) { }
-      setLoading(false);
+      setIsLoading(false);
     };
 
     triggerNewRoomCreation();
@@ -151,7 +152,7 @@ export const WelcomeBox = ({ isLoading }: IWelcomeBox) => {
         }
       </Grid>
       <Fab onClick={handleNewRoom} sx={{ position: 'absolute', bottom: 32, right: 32 }} color="secondary" aria-label="add">
-        <AddIcon />
+        {isLoading ? <CircularProgress /> : <AddIcon />}
       </Fab>
     </>
   );
