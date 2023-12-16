@@ -141,10 +141,6 @@ export const AuthPage = () => {
     }
   }, [success]);
 
-  // if (session?.user.id) {
-  //   navigate(-1);
-  // }
-
   return (
     <React.Fragment>
       {session && <Navigate to='/' />}

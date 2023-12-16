@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarGroup, Box, Card, CircularProgress, Fab, Grid, SxProps, Theme, Typography } from "@mui/material";
-import { useSupabaseContext } from "../provider/supabase/provider";
 import { Link, useNavigate } from "react-router-dom";
-import { useStoreActions, useStoreState } from "../store/typedHooks";
-
+import {
+  Avatar,
+  AvatarGroup,
+  Box,
+  Card,
+  CircularProgress,
+  Fab,
+  Grid,
+  SxProps,
+  Theme,
+  Typography
+} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import LandingAvatar from '../assets/landing-avatar.svg';
-import { Room } from "../interfaces";
 
-interface IWelcomeBox {
-  isLoading: boolean;
-  handleOpenBoard?: React.MouseEventHandler<HTMLButtonElement>;
-}
+import { Room } from "../interfaces";
+import { useSupabaseContext } from "../provider/supabase/provider";
+import { useStoreActions, useStoreState } from "../store/typedHooks";
+import LandingAvatar from '../assets/landing-avatar.svg';
 
 const styles: { [key: string]: SxProps<Theme> } = {
   roomcard: {
@@ -33,8 +39,8 @@ const styles: { [key: string]: SxProps<Theme> } = {
 }
 
 const randomRoomName = () => {
-  const names = ['Darknight', 'Lucy', 'Roronoa', 'Gojo', 'Gogo'];
-  return names[Math.round(Math.abs(Math.random() - 0.5) * 10) % names.length];
+  const names = ['Darknight', 'Lucy', 'Roronoa', 'Gojo', 'Gogo', 'Shadow', 'Phoenix', 'Blaze', 'Serenity', 'Vortex', 'Nova', 'Zephyr', 'Luna', 'Solstice', 'Ignite', 'Abyss', 'Eclipse', 'Tempest', 'Astral', 'Cipher', 'Nebula', 'Valkyrie', 'Stellar', 'Quasar', 'Chronos', 'Crimson', 'Aether', 'Celestia', 'Spectre', 'Orion'];
+  return names[Math.round(Math.abs(Math.random() - 0.8) * 10) % names.length];
 }
 
 export const WelcomeBox = () => {
@@ -64,7 +70,7 @@ export const WelcomeBox = () => {
         const { data, error } = await supabase!.from('rooms').insert(newroom).select().single();
         if (error) {
           setIsLoading(false);
-          console.log(error?.message);
+          alert(error.message);
           return;
         }
 
@@ -78,9 +84,9 @@ export const WelcomeBox = () => {
         const resp = await supabase!.from('users').update({
           rooms_id: currentRoomsOfUser,
         }).eq('id', user!.id);
-        if (resp.status !== 204) {
+        if (resp.error) {
           setIsLoading(false);
-          console.log(resp.error?.message);
+          alert(resp.error.message);
           return;
         } else {
           navigate(`/room/${data.id}`);
@@ -93,6 +99,17 @@ export const WelcomeBox = () => {
   }
 
   useEffect(() => {
+    const roomsChannel = supabase?.channel("rooms_channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rooms" },
+        (payload) => {
+          console.log('roomschannel');
+          console.log(payload);
+        }
+      )
+      .subscribe();
+
     // loads the rooms information to the app
     const loadRooms = () => {
       setLoading(true);
@@ -100,21 +117,24 @@ export const WelcomeBox = () => {
         try {
           const { data, error } = await supabase!.from('rooms').select('*').in('id', user!.rooms_id || []);
           if (error) {
-            console.log(error)
+            // alert(error);
             setLoading(false);
             return;
           }
           if (data.length > 0) {
-            // console.log(data)
             setRooms(data as Room[]);
           }
-          setLoading(false);
-        } catch (err) { setLoading(false); }
+        } catch (err) { }
+        setLoading(false);
       }
       fetchRooms();
     }
 
     loadRooms();
+
+    return () => {
+      supabase?.removeChannel(roomsChannel!);
+    }
   }, []);
 
   return (
@@ -136,7 +156,7 @@ export const WelcomeBox = () => {
                     <AvatarGroup componentsProps={{
                       additionalAvatar: { sx: { width: '24px', height: '24px' } }
                     }}>
-                      {users.map((user) => (
+                      {room.users_id.map((userId) => (
                         <Avatar sx={{ width: '24px', height: '24px' }} />
                       ))}
                     </AvatarGroup>

@@ -4,12 +4,14 @@ import { useSupabaseContext } from "../provider/supabase/provider";
 import { useUserSyncronizer } from "../utils/useUserSyncronizer";
 import CustomAppbar from "../components/CustomAppbar";
 import React from "react";
+import { useRoomSyncronizer } from "../utils/useRoomSynchronizer";
 
 interface ILayout {
   children: React.ReactElement;
 }
 
 function Layout({ children }: ILayout) {
+  const { isLoading } = useRoomSyncronizer();
   return (
     <Box
       width='100vw'

@@ -2,40 +2,50 @@ import { useEffect, useState } from "react";
 
 import supabase from "./supabase/supabase";
 import { Database } from "./supabase/types";
-import { useStoreActions } from "../store/typedHooks";
-import { Session } from "@supabase/supabase-js";
+import { useStoreActions, useStoreState } from "../store/typedHooks";
 
 export const useUserSyncronizer = () => {
   const { setUser } = useStoreActions((action) => action);
+  const { user } = useStoreState((state) => state);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      setIsLoading(true);
-      try {
-        const sessionResp = await supabase.auth.getSession();
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", sessionResp.data.session?.user.id)
-          .single();
-        if (error) {
-          setIsLoading(false);
-          setSuccess(false);
-          return;
-        }
-        // console.log(data);
-        setUser(data as Database["public"]["Tables"]["users"]["Row"]);
-        setSuccess(true);
-        setIsLoading(false);
-      } catch (e) {
-        console.log(e);
-        setSuccess(false);
-      }
-    };
+    setIsLoading(true);
 
-    fetchUserDetails();
+    const userChannel = supabase
+      .channel("user_channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "users" },
+        (payload) => {
+          console.log(payload);
+        }
+      )
+      .subscribe();
+
+    supabase.auth.getSession().then(({ data }) => {
+      supabase
+        .from("users")
+        .select("*")
+        .eq("id", data.session?.user.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            // alert(error.message);
+            setIsLoading(false);
+            setSuccess(false);
+            return;
+          }
+          setUser(data as Database["public"]["Tables"]["users"]["Row"]);
+          setSuccess(true);
+          setIsLoading(false);
+        });
+    });
+
+    return () => {
+      supabase.removeChannel(userChannel);
+    };
   }, []);
 
   return { isLoading, success };

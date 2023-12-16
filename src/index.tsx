@@ -2,14 +2,14 @@ import './styles/globals.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { StoreProvider, createStore } from 'easy-peasy';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
 import App from './App';
 import Theme from './theme/theme';
+import globalStore from './store/globalStore';
 import reportWebVitals from './reportWebVitals';
 import SupabaseContextProvider from './provider/supabase/provider';
-import { StoreProvider, createStore } from 'easy-peasy';
-import globalStore from './store/globalStore';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

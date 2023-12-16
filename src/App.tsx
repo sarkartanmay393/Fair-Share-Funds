@@ -7,6 +7,8 @@ import RoomPage from "./pages/Room.page";
 import { useSupabaseContext } from './provider/supabase/provider';
 import { useUserSyncronizer } from './utils/useUserSyncronizer';
 import { CircularProgress } from '@mui/material';
+import NotFoundPage from './pages/NotFound.page';
+import RoomUserManager from './pages/UserManager.page';
 
 function App() {
   const { session } = useSupabaseContext();
@@ -21,8 +23,13 @@ function App() {
             <Routes>
               <Route path="/" element={<Homepage />} />
               <Route path="/auth" element={<AuthPage />} />
-              {/* <Route path="/rooms" element={<RoomPage />} /> */}
-              <Route path="/room/:id" element={<RoomPage />} />
+
+              <Route path='/room/:id'>
+                <Route index element={<RoomPage />} />
+                <Route path="manage" element={<RoomUserManager />} />
+              </Route>
+
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </>
         }

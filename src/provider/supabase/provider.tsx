@@ -12,7 +12,7 @@ export default function SupabaseContextProvider({ children }: { children: ReactN
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-    })
+    });
 
     const {
       data: { subscription },
@@ -20,10 +20,10 @@ export default function SupabaseContextProvider({ children }: { children: ReactN
       if (event) {
         setSession(session)
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <SupabaseContext.Provider value={{ supabase: supabase, session: session }}>

@@ -1,6 +1,7 @@
 // import { Database } from "../utils/supabase/types";
 
 import { Action } from "easy-peasy";
+import { Json } from "../utils/supabase/types";
 
 export enum TransactionType {
   Pay = "Pay",
@@ -17,9 +18,9 @@ export interface User {
 
 export interface Room {
   created_by: string;
-  id: string;
+  id: number| string;
   last_updated: string;
-  master_sheet: string;
+  master_sheet: Json;
   name: string | null;
   slug: string;
   transactions_id: number[];

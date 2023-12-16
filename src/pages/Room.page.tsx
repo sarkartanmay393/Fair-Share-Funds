@@ -1,20 +1,21 @@
 import React, { useEffect } from "react";
-import { Box, CircularProgress } from "@mui/material";
-import {
-  Navigate,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Box } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 
+<<<<<<<
 import {
   BalanceSheet,
   Room,
   Transaction,
   TransactionType,
 } from "../interfaces";
+=======
+
+>>>>>>>
 import InputBar from "../components/Room/Input";
+import RoomUserManager from "./UserManager.page";
 import { Database } from "../utils/supabase/types";
+import { useSupabaseContext } from "../provider/supabase/provider";
 import { useStoreActions, useStoreState } from "../store/typedHooks";
 import { useSupabaseContext } from "../provider/supabase/provider";
 import DisplayInputs from "../components/Room/DisplayInputs";
@@ -32,24 +33,51 @@ const styles = {
 
 export default function RoomPage() {
   const { id } = useParams();
-  const [data, setData] = React.useState<Room>();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const pathname = window.location.pathname;
+  
+  const { supabase, session } = useSupabaseContext();
+  const [data, setData] = React.useState<Database["public"]['Tables']['rooms']['Row']>();
 
-  const { supabase } = useSupabaseContext();
-  const { user, rooms } = useStoreState((state) => state);
   const { setAppbarTitle } = useStoreActions((actions) => actions);
   const navigate = useNavigate();
 
+
+  // useEffect(() => {
+  //   const room = rooms?.find((room) => (room.id === id));
+  //   if (room) {
+  //     setAppbarTitle(room.name!);
+  //     setData(room);
+  //   } else {
+  //     navigate('/');
+  //     return;
+  //   }
+  // }, [])
+
+  const fetch = async () => {
+    // setIsLoading(true);
+    try {
+      const resp = await supabase?.from('rooms').select().eq('id', id).single();
+      const room = resp?.data as Database["public"]['Tables']['rooms']['Row'];
+      if (resp?.error || (!room.users_id.includes(session!.user.id))) {
+        navigate('/');
+        return;
+      }
+      if (room) {
+        setAppbarTitle(room.name || 'FSF Room');
+        setData(room);
+      }
+      // setIsLoading(false);
+    } catch (e) { }
+    // setIsLoading(false);
+  }
+
   useEffect(() => {
-    const room = rooms?.find((room) => room.id === id);
-    if (room) {
-      setAppbarTitle(room.name!);
-      setData(room);
-    } else {
-      navigate("/");
-      return;
-    }
-  }, []);
+    fetch();
+
+    return () => {
+      setAppbarTitle('Fair Share Funds');
+    };
+  }, [])
 
   // const fetch = async () => {
   //   setIsLoading(true);
