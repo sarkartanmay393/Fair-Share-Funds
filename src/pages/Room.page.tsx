@@ -2,16 +2,7 @@ import React, { useEffect } from "react";
 import { Box } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 
-<<<<<<<
-import {
-  BalanceSheet,
-  Room,
-  Transaction,
-  TransactionType,
-} from "../interfaces";
-=======
-
->>>>>>>
+import { Room } from "../interfaces";
 import InputBar from "../components/Room/Input";
 import RoomUserManager from "./UserManager.page";
 import { Database } from "../utils/supabase/types";
