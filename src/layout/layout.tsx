@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Grid } from "@mui/material";
 import { useStoreState } from "../store/typedHooks";
 import { useSupabaseContext } from "../provider/supabase/provider";
 import { useUserSyncronizer } from "../utils/useUserSyncronizer";
@@ -12,27 +12,27 @@ interface ILayout {
 
 function Layout({ children }: ILayout) {
   const { isLoading } = useRoomSyncronizer();
+
   return (
-    <Box
-      width='100vw'
-      height='100vh'
-      color='white'
-      bgcolor='background.paper'
-      display='flex'
-      flexDirection='column'
-      alignItems='center'
-      overflow='hidden'
+    <Grid
+      container
+      width="100vw"
+      height="100vh"
+      color="white"
+      overflow="hidden"
     >
-      <CustomAppbar />
-      <Box
-        height={{ xs: 'calc(100vh-60px)', sm: 'calc(100vh-64px)' }}
-        width='100vw'
-        display='flex'
-        alignItems='center'
+      <Grid
+        item
+        width="100%"
+        height={{ xs: "60px", sm: "64px" }}
+        overflow="hidden"
       >
+        <CustomAppbar />
+      </Grid>
+      <Grid flex={1} item height="100%" width="100%">
         {children}
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 }
 

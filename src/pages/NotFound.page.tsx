@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 
 const styles: { [key: string]: SxProps<Theme> } = {
   container: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-}
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
 
 export default function NotFoundPage() {
   return (

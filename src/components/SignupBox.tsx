@@ -6,17 +6,17 @@ interface ISignupBox {
 }
 
 export const SignupBox = ({ signupFormik }: ISignupBox) => {
-
   return (
-    <Box onSubmit={signupFormik.handleSubmit}
-      component='form'
-      display='grid'
-      width='100%'
+    <Box
+      onSubmit={signupFormik.handleSubmit}
+      component="form"
+      display="grid"
+      width="100%"
       gap={1.2}
     >
       <TextField
         fullWidth
-        variant='outlined'
+        variant="outlined"
         id="name"
         name="name"
         label="Name"
@@ -50,11 +50,15 @@ export const SignupBox = ({ signupFormik }: ISignupBox) => {
         error={signupFormik.errors.password ? true : false}
         helperText={signupFormik.errors.password}
       />
-      <LoadingButton loading={signupFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
-        <CircularProgress color="inherit" size={18} />
-      }>
+      <LoadingButton
+        loading={signupFormik.isSubmitting}
+        variant="contained"
+        type="submit"
+        color="secondary"
+        loadingIndicator={<CircularProgress color="inherit" size={18} />}
+      >
         Submit
       </LoadingButton>
     </Box>
   );
-}
+};

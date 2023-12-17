@@ -1,7 +1,7 @@
 // import { Database } from "../utils/supabase/types";
 
 import { Action } from "easy-peasy";
-import { Json } from "../utils/supabase/types";
+import { Database, Json } from "../utils/supabase/types";
 
 export enum TransactionType {
   Pay = "Pay",
@@ -9,42 +9,42 @@ export enum TransactionType {
 }
 
 export interface User {
+  email: string;
   id: string;
-  email: string | null;
-  name: string | null;
+  name: string;
   rooms_id: string[] | null;
-  username: string | null;
+  username: string;
 }
 
 export interface Room {
   created_by: string;
-  id: number| string;
-  last_updated: string;
+  id: string;
+  last_updated: string | null;
   master_sheet: Json;
-  name: string | null;
-  slug: string;
-  transactions_id: number[];
+  name: string;
+  transactions_id: string[] | null;
   users_id: string[];
 }
 
 // Transaction can be used in making History of a room
 // also make the balance sheet with user.length transaction objects.
 export interface Transaction {
-  id: string;
-  from: string; // can use username or email
-  to: string; // can use username or email
-  time: Date;
   amount: number;
-  type: TransactionType;
+  approved: boolean | null;
+  created_at: string;
+  from_user: string;
+  id: string;
   room_id: string;
-  sheet_id?: string; // if not exists, we know its normal transaction on history
+  to_user: string;
+  type: "Pay" | "Due";
 }
 
-export interface BalanceSheet {
-  id: string;
-  room_id: string;
-  users_count: number;
-  sheet: Transaction[]; // transaction.length==users_count
+export interface MasterSheet {
+  [userId: string]: [
+    {
+      [userId: string]: number;
+    },
+  ];
 }
 
 export interface GlobalStore {

@@ -20,11 +20,10 @@ export const useRoomSyncronizer = () => {
         { event: "*", schema: "public", table: "rooms" },
         (payload) => {
           console.log(payload);
-        }
+        },
       )
       .subscribe();
 
-    console.log(user?.rooms_id || []);
     supabase
       .from("rooms")
       .select("*")

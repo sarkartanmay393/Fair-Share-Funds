@@ -7,10 +7,11 @@ interface ILoginBox {
 
 export const LoginBox = ({ loginFormik }: ILoginBox) => {
   return (
-    <Box onSubmit={loginFormik.handleSubmit}
-      component='form'
-      display='grid'
-      width='100%'
+    <Box
+      onSubmit={loginFormik.handleSubmit}
+      component="form"
+      display="grid"
+      width="100%"
       gap={1.2}
     >
       <TextField
@@ -36,13 +37,16 @@ export const LoginBox = ({ loginFormik }: ILoginBox) => {
         onChange={loginFormik.handleChange}
         error={loginFormik.errors.password ? true : false}
         helperText={loginFormik.errors.password}
-
       />
-      <LoadingButton loading={loginFormik.isSubmitting} variant="contained" type="submit" color="secondary" loadingIndicator={
-        <CircularProgress color="inherit" size={18} />
-      }>
+      <LoadingButton
+        loading={loginFormik.isSubmitting}
+        variant="contained"
+        type="submit"
+        color="secondary"
+        loadingIndicator={<CircularProgress color="inherit" size={18} />}
+      >
         Submit
       </LoadingButton>
     </Box>
   );
-}
+};

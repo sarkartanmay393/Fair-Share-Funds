@@ -37,32 +37,29 @@ export interface Database {
       rooms: {
         Row: {
           created_by: string;
-          id: number;
-          last_updated: string;
+          id: string;
+          last_updated: string | null;
           master_sheet: Json | null;
-          name: string | null;
-          slug: string;
-          transactions_id: number[];
+          name: string;
+          transactions_id: string[] | null;
           users_id: string[];
         };
         Insert: {
           created_by: string;
-          id?: never;
-          last_updated?: string;
+          id?: string;
+          last_updated?: string | null;
           master_sheet?: Json | null;
-          name?: string | null;
-          slug: string;
-          transactions_id: number[];
+          name: string;
+          transactions_id?: string[] | null;
           users_id: string[];
         };
         Update: {
           created_by?: string;
-          id?: never;
-          last_updated?: string;
+          id?: string;
+          last_updated?: string | null;
           master_sheet?: Json | null;
-          name?: string | null;
-          slug?: string;
-          transactions_id?: number[];
+          name?: string;
+          transactions_id?: string[] | null;
           users_id?: string[];
         };
         Relationships: [
@@ -72,37 +69,37 @@ export interface Database {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       transactions: {
         Row: {
           amount: number;
-          approvals: Json;
+          approved: boolean | null;
           created_at: string;
           from_user: string;
-          id: number;
-          room_id: number;
+          id: string;
+          room_id: string;
           to_user: string;
           type: Database["public"]["Enums"]["transaction_type"];
         };
         Insert: {
           amount: number;
-          approvals: Json;
+          approved?: boolean | null;
           created_at?: string;
           from_user: string;
-          id?: number;
-          room_id: number;
+          id?: string;
+          room_id: string;
           to_user: string;
           type: Database["public"]["Enums"]["transaction_type"];
         };
         Update: {
           amount?: number;
-          approvals?: Json;
+          approved?: boolean | null;
           created_at?: string;
           from_user?: string;
-          id?: number;
-          room_id?: number;
+          id?: string;
+          room_id?: string;
           to_user?: string;
           type?: Database["public"]["Enums"]["transaction_type"];
         };
@@ -127,30 +124,30 @@ export interface Database {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       users: {
         Row: {
-          email: string | null;
+          email: string;
           id: string;
-          name: string | null;
+          name: string;
           rooms_id: string[] | null;
-          username: string | null;
+          username: string;
         };
         Insert: {
-          email?: string | null;
+          email: string;
           id: string;
-          name?: string | null;
+          name: string;
           rooms_id?: string[] | null;
-          username?: string | null;
+          username: string;
         };
         Update: {
-          email?: string | null;
+          email?: string;
           id?: string;
-          name?: string | null;
+          name?: string;
           rooms_id?: string[] | null;
-          username?: string | null;
+          username?: string;
         };
         Relationships: [];
       };
@@ -277,7 +274,7 @@ export interface Database {
             isOneToOne: false;
             referencedRelation: "buckets";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
     };
@@ -356,7 +353,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -365,14 +362,14 @@ export type Tables<
     ? R
     : never
   : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
-      Database["public"]["Views"])
-  ? (Database["public"]["Tables"] &
-      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : never;
+        Database["public"]["Views"])
+    ? (Database["public"]["Tables"] &
+        Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
@@ -380,7 +377,7 @@ export type TablesInsert<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
@@ -388,12 +385,12 @@ export type TablesInsert<
     ? I
     : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : never;
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
@@ -401,7 +398,7 @@ export type TablesUpdate<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
@@ -409,12 +406,12 @@ export type TablesUpdate<
     ? U
     : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : never;
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
 
 export type Enums<
   PublicEnumNameOrOptions extends
@@ -422,9 +419,9 @@ export type Enums<
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never
+    : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
-  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
-  : never;
+    ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+    : never;
