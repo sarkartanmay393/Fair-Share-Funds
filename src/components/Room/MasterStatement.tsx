@@ -1,37 +1,38 @@
-import { useState } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Card, Typography } from "@mui/material";
-import { TransactionType } from "../../interfaces";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Avatar,
+  Box,
+  Card,
+  Typography,
+} from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-// Dummy BalanceSheet data
-const balanceSheet = {
-  id: "balance123",
-  room_id: "room123",
-  users_count: 2,
-  sheet: [
-    {
-      username: "usr1",
-      type: TransactionType.Due,
-      amount: 100,
-    },
-    {
-      username: "usr2",
-      type: TransactionType.Pay,
-      amount: 400,
-    },
-  ],
-};
-
-const MasterStatement = () => {
-  const [showHistory, setShowHistory] = useState(false);
+const MasterStatement = ({
+  POVstatement,
+  roomUsers,
+}: {
+  POVstatement?: {
+    [userId: string]: number;
+  };
+  roomUsers?: {
+    email: string;
+    id: string;
+    name: string;
+    rooms_id: string[] | null;
+    username: string;
+  }[];
+}) => {
+  // const userIds = POVstatement && Object.keys(POVstatement);
+  // const userAmounts = POVstatement && Object.values(POVstatement);
 
   return (
     <Card
       raised
       sx={{
-        position: 'fixed',
-        top: { xs: '64px', sm: '70px' },
+        position: "fixed",
+        top: { xs: "64px", sm: "70px" },
         zIndex: 3,
         border: "px solid red",
         borderRadius: 3,
@@ -48,40 +49,41 @@ const MasterStatement = () => {
           <Typography>Statement</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          {balanceSheet.sheet.map((transaction: any, index: number) => (
-            <Box
-              key={index}
-              sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            >
+          {POVstatement &&
+            Object.entries(POVstatement).map((entry, index) => (
               <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  paddingX: "15px",
-                  paddingY: "10px",
-                  border: "px solid red",
-                  borderRadius: "8px",
-                }}
+                key={index}
+                sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
               >
-                <Box sx={{ display: "flex", gap: "20px" }}>
-                  <Box sx={{}}>
-                    <Avatar>D</Avatar>
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    paddingX: "15px",
+                    paddingY: "10px",
+                    border: "px solid red",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: "20px" }}>
+                    <Box sx={{}}>
+                      <Avatar>D</Avatar>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Typography sx={{ fontSize: "15px" }}>
+                        {roomUsers?.find((u) => u.id === entry[0])?.name}
+                      </Typography>
+                    </Box>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography sx={{ fontSize: "15px" }}>
-                      {transaction.username}
+                    <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
+                      {entry[1]}
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
-                    {transaction.type === "Due" ? `-` : `+`} {transaction.amount}
-                  </Typography>
-                </Box>
               </Box>
-            </Box>
-          ))}
+            ))}
         </AccordionDetails>
       </Accordion>
     </Card>

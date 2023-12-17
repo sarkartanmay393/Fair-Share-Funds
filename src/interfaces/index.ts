@@ -40,11 +40,9 @@ export interface Transaction {
 }
 
 export interface MasterSheet {
-  [userId: string]: [
-    {
-      [userId: string]: number;
-    },
-  ];
+  [selfId: string]: {
+    [userId: string]: number;
+  };
 }
 
 export interface GlobalStore {

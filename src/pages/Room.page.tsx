@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 
 import InputBar from "../components/Room/Input";
@@ -9,17 +9,22 @@ import { useSupabaseContext } from "../provider/supabase/provider";
 import TransactionsHistory from "../components/Room/TransactionsHistory";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData";
 import MasterStatement from "../components/Room/MasterStatement";
+import { MasterSheet } from "../interfaces";
 
 export default function RoomPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { supabase } = useSupabaseContext();
+  const { supabase, session } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
   const [roomUsers, setRoomUsers] =
     useState<Database["public"]["Tables"]["users"]["Row"][]>();
 
   const { currentRoomData, currentTransactions } = useCurrentRoomData(id || "");
+
+  const masterStatement = currentRoomData?.master_sheet as MasterSheet;
+  const userPOVstatement =
+    masterStatement && masterStatement[session?.user.id || ""];
 
   const fetch = async () => {
     try {
@@ -36,7 +41,7 @@ export default function RoomPage() {
       if (users) {
         setRoomUsers(users);
       }
-    } catch (e) { }
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -51,11 +56,22 @@ export default function RoomPage() {
   }, [currentRoomData]);
 
   return (
-    <Grid px={4} pt='64px' pb='135px' height='100%' container justifyContent="center" paddingX={0} border="px solid red" sx={{ overflowY: 'scroll' }}>
-      <MasterStatement />
+    <Grid
+      px={4}
+      pt="64px"
+      pb="135px"
+      height="100%"
+      container
+      justifyContent="center"
+      paddingX={0}
+      border="px solid red"
+      sx={{ overflowY: "scroll" }}
+    >
+      <MasterStatement POVstatement={userPOVstatement} roomUsers={roomUsers} />
       <TransactionsHistory
         transactions={currentTransactions}
         roomUsers={roomUsers}
+        currentRoomData={currentRoomData}
       />
       <InputBar roomData={currentRoomData} roomUsers={roomUsers} />
     </Grid>
