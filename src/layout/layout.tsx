@@ -1,18 +1,12 @@
-import { Box, CircularProgress, Grid } from "@mui/material";
-import { useStoreState } from "../store/typedHooks";
-import { useSupabaseContext } from "../provider/supabase/provider";
-import { useUserSyncronizer } from "../utils/useUserSyncronizer";
+import { Grid } from "@mui/material";
 import CustomAppbar from "../components/CustomAppbar";
 import React from "react";
-import { useRoomSyncronizer } from "../utils/useRoomSynchronizer";
 
 interface ILayout {
   children: React.ReactElement;
 }
 
 function Layout({ children }: ILayout) {
-  const { isLoading } = useRoomSyncronizer();
-
   return (
     <Grid
       container

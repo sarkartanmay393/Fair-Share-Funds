@@ -5,14 +5,14 @@ import Homepage from "./pages/Home.page";
 import { AuthPage } from "./pages/Auth.page";
 import RoomPage from "./pages/Room.page";
 import { useSupabaseContext } from "./provider/supabase/provider";
-import { useUserSyncronizer } from "./utils/useUserSyncronizer";
 import { CircularProgress } from "@mui/material";
 import NotFoundPage from "./pages/NotFound.page";
 import RoomUserManager from "./pages/UserManager.page";
+import { useCurrentUser } from "./utils/useCurrentUser";
 
 function App() {
   const { session } = useSupabaseContext();
-  const { isLoading } = useUserSyncronizer();
+  const { isLoading } = useCurrentUser();
 
   return (
     <BrowserRouter>
@@ -41,3 +41,4 @@ function App() {
 }
 
 export default App;
+
