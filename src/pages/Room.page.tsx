@@ -57,14 +57,12 @@ export default function RoomPage() {
 
   return (
     <Grid
+      container
       px={4}
       pt="64px"
       pb="135px"
       height="100%"
-      container
       justifyContent="center"
-      paddingX={0}
-      border="px solid red"
       sx={{ overflowY: "scroll" }}
     >
       <MasterStatement POVstatement={userPOVstatement} roomUsers={roomUsers} />

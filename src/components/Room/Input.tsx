@@ -7,10 +7,8 @@ import { Avatar, Box, IconButton, TextField, Typography } from "@mui/material";
 import { Send } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { Database } from "../../utils/supabase/types";
 import { useSupabaseContext } from "../../provider/supabase/provider";
-import { Transaction } from "../../interfaces";
 
 const BootstrapInput = styled(InputBase)(({ theme }) => ({
   "label + &": {
@@ -57,7 +55,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
   const [error, setError] = React.useState("");
 
   const useTransactionInputFormik = useFormik({
-    initialValues: { toUser: "self", transactionType: "Pay", amount: 0 },
+    initialValues: { toUser: "self", transactionType: "Pay", amount: "" },
     validationSchema: Yup.object().shape({
       toUser: Yup.string().min(8).required(),
       amount: Yup.number().moreThan(0, "amount must > 0"),
@@ -71,7 +69,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           return;
         }
         const newTransaction = {
-          amount: values.amount,
+          amount: Number(values.amount),
           from_user: session?.user.id,
           room_id: roomData?.id,
           to_user: values.toUser,
@@ -122,7 +120,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
       bottom={10}
       borderRadius={20}
       height="64px"
-      width={{ xs: "100%", md: "420px" }}
+      width={{ xs: "95%" }}
       display="flex"
       alignItems="center"
       justifyContent="space-between"
@@ -130,26 +128,21 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
       onSubmit={useTransactionInputFormik.handleSubmit}
     >
       <Box
+        flex={1}
         display="flex"
-        width="86%"
-        justifyContent="space-evenly"
+        justifyContent={{ xs: "space-evenly", md: "flex-start" }}
         alignItems="center"
+        ml={{ xs: 1.25, md: 2 }}
       >
         <Select
-          // variant='standard'
+          disableUnderline
+          variant="standard"
           size="small"
           id="to-user-select"
           name="toUser"
           value={useTransactionInputFormik.values.toUser}
           onChange={useTransactionInputFormik.handleChange}
-          // sx={{
-          //   border: 0, outline: 0, boxShadow: 0,
-          //   '&:hover': { border: 0, outline: 0, boxShadow: 0 },
-          //   '.MuiInput-underline': {
-          //     border: 0,
-          //     outline: 0,
-          //   }
-          // }}
+          sx={{ mr: { xs: 0.5, md: 2 } }}
         >
           {roomUsers &&
             roomUsers.map(
@@ -201,21 +194,26 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           type="number"
           size="small"
           name="amount"
-          // label="Amount"
+          label="Amount"
           variant="outlined"
-          sx={{ padding: "0px" }}
           value={useTransactionInputFormik.values.amount}
-          placeholder={"" + useTransactionInputFormik.values.amount}
+          placeholder={useTransactionInputFormik.values.amount}
           onChange={useTransactionInputFormik.handleChange}
+          sx={{ width: "100%", padding: "0px", ml: { xs: 0.5, md: 1 } }}
         />
       </Box>
-      <Box width="11%">
+      <Box
+        display="flex"
+        justifyContent="end"
+        pl={{ xs: 1, md: 2 }}
+        mr={{ md: 2 }}
+      >
         <IconButton
           disabled={useTransactionInputFormik.isSubmitting}
           type="submit"
           sx={{}}
         >
-          <Send sx={{ fontSize: "18px" }} />
+          <Send sx={{ fontSize: "22px" }} />
         </IconButton>
       </Box>
     </Box>

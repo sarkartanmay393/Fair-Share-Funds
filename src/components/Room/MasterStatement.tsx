@@ -24,8 +24,6 @@ const MasterStatement = ({
     username: string;
   }[];
 }) => {
-  // const userIds = POVstatement && Object.keys(POVstatement);
-  // const userAmounts = POVstatement && Object.values(POVstatement);
 
   return (
     <Card
@@ -34,7 +32,6 @@ const MasterStatement = ({
         position: "fixed",
         top: { xs: "64px", sm: "70px" },
         zIndex: 3,
-        border: "px solid red",
         borderRadius: 3,
         flexDirection: "column",
         width: "96%",
