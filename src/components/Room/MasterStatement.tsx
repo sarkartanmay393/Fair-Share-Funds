@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Avatar, Box, Button, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Card, Typography } from "@mui/material";
 import { TransactionType } from "../../interfaces";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -27,72 +27,64 @@ const MasterStatement = () => {
   const [showHistory, setShowHistory] = useState(false);
 
   return (
-    <Box
+    <Card
+      raised
       sx={{
-        border: "1px solid red",
-        borderRadius: 20,
+        position: 'fixed',
+        top: { xs: '64px', sm: '70px' },
+        zIndex: 3,
+        border: "px solid red",
+        borderRadius: 3,
         flexDirection: "column",
-        gap: "10px",
-        width: "100%",
-        display: "flex",
-        paddingX: "15px",
-        paddingY: "10px",
+        width: "96%",
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Typography>Statement</Typography>
-        <Button
-          onClick={() => {
-            setShowHistory(showHistory ? false : true);
-          }}
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<KeyboardArrowDownIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
         >
-          {!showHistory && <KeyboardArrowDownIcon />}
-          {showHistory && <KeyboardArrowUpIcon />}
-        </Button>
-      </Box>
-
-      {showHistory &&
-        balanceSheet.sheet.map((transaction: any, index: number) => (
-          <Box
-            key={index}
-            sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
-          >
+          <Typography>Statement</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {balanceSheet.sheet.map((transaction: any, index: number) => (
             <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-between",
-                paddingX: "15px",
-                paddingY: "10px",
-                border: "px solid red",
-                borderRadius: "8px",
-              }}
+              key={index}
+              sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
             >
-              <Box sx={{ display: "flex", gap: "20px" }}>
-                <Box sx={{}}>
-                  <Avatar>D</Avatar>
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  paddingX: "15px",
+                  paddingY: "10px",
+                  border: "px solid red",
+                  borderRadius: "8px",
+                }}
+              >
+                <Box sx={{ display: "flex", gap: "20px" }}>
+                  <Box sx={{}}>
+                    <Avatar>D</Avatar>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography sx={{ fontSize: "15px" }}>
+                      {transaction.username}
+                    </Typography>
+                  </Box>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Typography sx={{ fontSize: "15px" }}>
-                    {transaction.username}
+                  <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
+                    {transaction.type === "Due" ? `-` : `+`} {transaction.amount}
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
-                  {transaction.type === "Due" ? `-` : `+`} {transaction.amount}
-                </Typography>
-              </Box>
             </Box>
-          </Box>
-        ))}
-    </Box>
+          ))}
+        </AccordionDetails>
+      </Accordion>
+    </Card>
   );
 };
 export default MasterStatement;

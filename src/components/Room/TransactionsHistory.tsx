@@ -9,8 +9,9 @@ const TransactionsHistory = ({
   roomUsers?: User[];
 }) => {
   return (
-    <Grid container direction="column-reverse">
-      {transactions &&
+    <>
+      {
+        transactions &&
         transactions.map((trnx, index) => {
           const fromUser = roomUsers?.find((u) => u.id === trnx.from_user);
           return (
@@ -18,11 +19,14 @@ const TransactionsHistory = ({
               <Card
                 key={index + trnx.id.slice(0, 3)}
                 sx={{
-                  width: "100%",
+                  width: "95%",
                   display: "flex",
                   justifyContent: "space-between",
                   paddingX: "15px",
                   paddingY: "10px",
+                  bgcolor: 'background.default',
+                  mb: '8px',
+                  borderRadius: '8px'
                 }}
               >
                 <Box sx={{ display: "flex", gap: "20px" }}>
@@ -61,48 +65,53 @@ const TransactionsHistory = ({
                   </Typography>
                 </Box>
               </Card>
-              {["", "", "", "", "", "", "", "", "", "", ""].map(() => (
-                <Card
-                  key={index + trnx.id.slice(0, 3)}
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    paddingX: "15px",
-                    paddingY: "10px",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: "20px" }}>
-                    <Box sx={{}}>
-                      <Avatar>
-                        <Typography color="white">{`sadf`}</Typography>
-                      </Avatar>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Typography sx={{ fontSize: "15px" }}>{`sdf`}</Typography>
-
-                      <Typography sx={{ fontSize: "12px" }}>{`df`}</Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography
-                      sx={{ fontSize: "15px", fontWeight: "600" }}
-                      color={"Pay" === "Pay" ? "lightgreen" : "#FF6961"}
-                    >
-                      Rs {30}
-                    </Typography>
-                  </Box>
-                </Card>
-              ))}
             </>
           );
-        })}
-    </Grid>
+        })
+      }
+      {
+        ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""].map((s, index) => (
+          <Card
+            key={index}
+            sx={{
+              width: "95%",
+              display: "flex",
+              justifyContent: "space-between",
+              paddingX: "15px",
+              paddingY: "10px",
+              bgcolor: 'background.default',
+              mb: '8px',
+              borderRadius: '8px'
+            }}
+          >
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <Box sx={{}}>
+                <Avatar>
+                  <Typography color="white">{`sadf`}</Typography>
+                </Avatar>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Typography sx={{ fontSize: "15px" }}>{`sdf`}</Typography>
+
+                <Typography sx={{ fontSize: "12px" }}>{`df`}</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                sx={{ fontSize: "15px", fontWeight: "600" }}
+                color={"Pay" === "Pay" ? "lightgreen" : "#FF6961"}
+              >
+                Rs {30}
+              </Typography>
+            </Box>
+          </Card>))
+      }
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Grid } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 
 import InputBar from "../components/Room/Input";
@@ -36,7 +36,7 @@ export default function RoomPage() {
       if (users) {
         setRoomUsers(users);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function RoomPage() {
   }, [currentRoomData]);
 
   return (
-    <Grid container justifyContent="center" paddingX={0} border="px solid red">
+    <Grid px={4} pt='64px' pb='135px' height='100%' container justifyContent="center" paddingX={0} border="px solid red" sx={{ overflowY: 'scroll' }}>
       <MasterStatement />
       <TransactionsHistory
         transactions={currentTransactions}
