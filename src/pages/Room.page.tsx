@@ -14,12 +14,11 @@ import { MasterSheet } from "../interfaces";
 export default function RoomPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const trnxContainerRef = useRef<HTMLDivElement | null>(null);
   const { supabase, session } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
   const [roomUsers, setRoomUsers] =
     useState<Database["public"]["Tables"]["users"]["Row"][]>();
-  const trnxContainerRef = useRef<HTMLDivElement | null>(null);
-  // const [prevScrollHeight, setPrevScrollHeight] = useState(0);
 
   const { currentRoomData, currentTransactions } = useCurrentRoomData(id || "");
   const masterStatement = currentRoomData?.master_sheet as MasterSheet;
@@ -55,42 +54,22 @@ export default function RoomPage() {
     };
   }, [currentRoomData]);
 
-  useEffect(() => {
-    const container = trnxContainerRef.current;
-    if (!container) {
-      return;
-    }
-
-    // container.scrollTop = container.scrollHeight;
-    // container.scrollTop = container.scrollHeight - prevScrollHeight;
-    // setPrevScrollHeight(container.scrollHeight);
-
-    // container.addEventListener("scroll", handleScroll);
-
-    // return () => {
-    //   container.removeEventListener("scroll", handleScroll);
-    // };
-  }, []);
-
   return (
     <Box
       // ref={trnxContainerRef}
-      height="100%"
       width="100%"
+      height="100%"
       display="flex"
       flexDirection="column"
-      justifyContent="end"
-      px={4}
-      pt="64px"
-      pb="135px"
-      sx={{ overflowY: "scroll" }}
+      alignItems="center"
+      // justifyContent="end"
+      // px={4}
+      // pt="64px"
+      // pb="135px"
+      // sx={{ overflowY: "scroll" }}
     >
       <MasterStatement POVstatement={userPOVstatement} roomUsers={roomUsers} />
-      <TransactionsHistory
-        transactions={currentTransactions}
-        roomUsers={roomUsers}
-        currentRoomData={currentRoomData}
-      />
+      <TransactionsHistory roomUsers={roomUsers} roomId={id!} />
       <InputBar roomData={currentRoomData} roomUsers={roomUsers} />
     </Box>
   );

@@ -4,7 +4,7 @@ import { GlobalStore } from "../interfaces";
 const globalStore: GlobalStore = {
   user: null,
   rooms: null,
-  appbarTitle: "Fair Share Funds",
+  appbarTitle: "RoomPay",
 
   setUser: action((state, payload) => {
     state.user = payload;

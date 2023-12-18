@@ -11,12 +11,12 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Avatar, Button, ListItemIcon } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 import { useStoreState } from "../store/typedHooks";
 import { useSupabaseContext } from "../provider/supabase/provider";
-import Logo from "../assets/logo.png";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData";
+import Logo from "../assets/logo.png";
+import BackIcon from "../assets/icons8-back-36.png";
 
 export default function CustomAppbar() {
   const pathname = window.location.pathname;
@@ -38,12 +38,6 @@ export default function CustomAppbar() {
     ? currentRoomData.created_by === session!.user.id
     : false;
 
-  // useEffect(() => {
-  //   setAdminAccess(
-  //     currentRoomData ? currentRoomData.created_by === session!.user.id : false,
-  //   );
-  // }, [roomId]);
-
   const signOut = async () => {
     const resp = await supabase?.auth.signOut();
     if (resp && resp.error) {
@@ -57,25 +51,24 @@ export default function CustomAppbar() {
   }, [location.pathname]);
 
   return (
-    <AppBar position="fixed" sx={{ maxHeight: { xs: "60px", sm: "64px" } }}>
+    <AppBar
+      position="fixed"
+      sx={{
+        top: 0,
+        height: { xs: "60px", sm: "64px" },
+      }}
+    >
       <Toolbar>
         <IconButton
           size="large"
           edge="start"
-          color="inherit"
           aria-label="logo"
-          sx={{}}
-          // href={pathname.length > 1 ? '' : '/'}
-          onClick={() => {
-            if (pathname.length > 1) {
-              navigate(-1);
-            }
-          }}
+          onClick={() => pathname.length > 1 && navigate(-1)}
         >
           {pathname.length > 1 ? (
-            <ArrowBackIosNewIcon />
+            <img width={36} height={36} src={BackIcon} alt="back" />
           ) : (
-            <img width={36} src={Logo} alt="fair share funds logo" />
+            <img width={36} height={36} src={Logo} alt="roompay logo" />
           )}
         </IconButton>
 
