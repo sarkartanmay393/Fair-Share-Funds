@@ -29,23 +29,26 @@ export const useCurrentUser = () => {
       )
       .subscribe();
 
-    const loadUser = () =>
-      void supabase
-        .from("users")
-        .select()
-        .eq("id", session?.user.id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            setIsLoading(false);
-            setSuccess(false);
-            return;
-          }
-          setUser(data as Database["public"]["Tables"]["users"]["Row"]);
-          setCUser(data as Database["public"]["Tables"]["users"]["Row"]);
-          setSuccess(true);
-          setIsLoading(false);
-        });
+    const loadUser = () => {
+      if (session) {
+        supabase
+          .from("users")
+          .select()
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
+              setIsLoading(false);
+              setSuccess(false);
+              return;
+            }
+            setUser(data as Database["public"]["Tables"]["users"]["Row"]);
+            setCUser(data as Database["public"]["Tables"]["users"]["Row"]);
+            setSuccess(true);
+          });
+      }
+      setIsLoading(false);
+    };
 
     loadUser();
 

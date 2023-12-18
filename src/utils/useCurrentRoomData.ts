@@ -29,38 +29,41 @@ export const useCurrentRoomData = (roomId: string) => {
       .subscribe();
 
     const loadLatestData = () =>
-      void supabase
-        .from("rooms")
-        .select()
-        .eq("id", roomId)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            setIsLoading(false);
-            setError(true);
-            return;
-          }
-          setCurrentRoomData(
-            data as Database["public"]["Tables"]["rooms"]["Row"],
-          );
-
-          supabase
-            .from("transactions")
-            .select()
-            .in("id", data.transactions_id || [])
-            .then(({ data, error }) => {
-              if (error) {
-                setIsLoading(false);
-                setError(true);
-                return;
-              }
-              setCurrentTransactions(
-                data as Database["public"]["Tables"]["transactions"]["Row"][],
-              );
-              setError(false);
+      void supabase.auth.getSession().then(({ data: { session } }) =>
+        supabase
+          .from("rooms")
+          .select()
+          .eq("id", roomId)
+          .contains("users_id", [session?.user.id])
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
               setIsLoading(false);
-            });
-        });
+              setError(true);
+              return;
+            }
+            setCurrentRoomData(
+              data as Database["public"]["Tables"]["rooms"]["Row"],
+            );
+
+            supabase
+              .from("transactions")
+              .select()
+              .in("id", data.transactions_id || [])
+              .then(({ data, error }) => {
+                if (error) {
+                  setIsLoading(false);
+                  setError(true);
+                  return;
+                }
+                setCurrentTransactions(
+                  data as Database["public"]["Tables"]["transactions"]["Row"][],
+                );
+                setError(false);
+                setIsLoading(false);
+              });
+          }),
+      );
 
     loadLatestData();
 

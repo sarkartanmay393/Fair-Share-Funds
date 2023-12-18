@@ -8,22 +8,11 @@ interface ILayout {
 
 function Layout({ children }: ILayout) {
   return (
-    <Grid
-      container
-      width="100vw"
-      height="100vh"
-      color="white"
-      overflow="hidden"
-    >
-      <Grid
-        item
-        width="100%"
-        height={{ xs: "60px", sm: "64px" }}
-        overflow="hidden"
-      >
+    <Grid container width="100vw" height="100vh" color="white">
+      <Grid item width="100%" height={{ xs: "60px", sm: "64px" }}>
         <CustomAppbar />
       </Grid>
-      <Grid flex={1} item height="100%" width="100%">
+      <Grid flex={1} item width="100%">
         {children}
       </Grid>
     </Grid>

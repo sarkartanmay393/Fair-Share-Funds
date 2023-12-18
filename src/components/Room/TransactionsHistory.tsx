@@ -49,23 +49,22 @@ const TransactionsHistory = ({
   return (
     <>
       {transactions &&
-        transactions.map((trnx) => {
+        transactions.map((trnx, i) => {
           const fromUser = roomUsers?.find((u) => u.id === trnx.from_user);
           const toUserSelf = session?.user.id === trnx.to_user;
           return (
             <Card
-              key={trnx.id.slice(0, 3)}
+              key={i + trnx.id.slice(0, 3)}
               sx={{
                 mb: "8px",
-                width: "95%",
-                height: "max-content",
+                width: "100%",
+                height: "64px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 bgcolor: "background.default",
                 borderRadius: "8px",
                 paddingX: "15px",
-                paddingY: "10px",
               }}
             >
               <Box sx={{ display: "flex", gap: "18px" }} border="px solid red">

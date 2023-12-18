@@ -1,27 +1,14 @@
 import { useState } from "react";
-import { Box, CircularProgress, Fab, SxProps, Theme } from "@mui/material";
+import { Box, CircularProgress, Fab, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { WelcomeBox } from "../components/Home/WelcomeBox";
 import { Room } from "../interfaces";
 import { useSupabaseContext } from "../provider/supabase/provider";
 import generateRandomName from "../utils/generateRandomName";
 import { useStoreState } from "../store/typedHooks";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 import { Rooms } from "../components/Home/Rooms";
-
-const styles: { [key: string]: SxProps<Theme> } = {
-  container: {
-    mt: 6,
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    paddingX: 4,
-    gap: 8,
-    overflow: "scroll",
-  },
-};
+import LandingAvatar from "../assets/landing-avatar.svg";
 
 export default function Homepage() {
   const navigate = useNavigate();
@@ -73,7 +60,7 @@ export default function Homepage() {
         }
 
         navigate(`/room/${data.id}`);
-      } catch (e) { }
+      } catch (e) {}
       setLoading(false);
     };
 
@@ -81,8 +68,31 @@ export default function Homepage() {
   };
 
   return (
-    <Box sx={{ ...styles.container }}>
-      <WelcomeBox />
+    <Box
+      sx={{
+        mt: 6,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        paddingX: 4,
+        gap: 8,
+      }}
+    >
+      <Box
+        width="100%"
+        // mt={6}
+        px={2}
+        display="flex"
+        bgcolor="#89a7d9"
+        borderRadius="100px 8px 80px 8px"
+        // alignItems="center"
+      >
+        <img src={LandingAvatar} alt="fsf landing page avatar" />
+        <Typography fontWeight={600} fontSize={{ xs: 26, sm: 32 }}>
+          Hi, {user?.username}
+        </Typography>
+      </Box>
       <Rooms />
       <Fab
         onClick={handleNewRoom}

@@ -197,7 +197,6 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           label="Amount"
           variant="outlined"
           value={useTransactionInputFormik.values.amount}
-          placeholder={useTransactionInputFormik.values.amount}
           onChange={useTransactionInputFormik.handleChange}
           sx={{ width: "100%", padding: "0px", ml: { xs: 0.5, md: 1 } }}
         />

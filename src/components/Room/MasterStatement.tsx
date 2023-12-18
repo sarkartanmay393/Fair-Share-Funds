@@ -24,17 +24,17 @@ const MasterStatement = ({
     username: string;
   }[];
 }) => {
-
   return (
     <Card
       raised
       sx={{
+        border: "0.2px solid grey",
         position: "fixed",
         top: { xs: "64px", sm: "70px" },
         zIndex: 3,
         borderRadius: 3,
         flexDirection: "column",
-        width: "96%",
+        width: "95%",
       }}
     >
       <Accordion>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Menu from "@mui/material/Menu";
@@ -16,6 +16,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useStoreState } from "../store/typedHooks";
 import { useSupabaseContext } from "../provider/supabase/provider";
 import Logo from "../assets/logo.png";
+import { useCurrentRoomData } from "../utils/useCurrentRoomData";
 
 export default function CustomAppbar() {
   const pathname = window.location.pathname;
@@ -24,16 +25,24 @@ export default function CustomAppbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, supabase } = useSupabaseContext();
-  const { appbarTitle, rooms } = useStoreState((state) => state);
+  const { appbarTitle } = useStoreState((state) => state);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [anchorElExpand, setAnchorElExpand] = useState<HTMLElement | null>(
     null,
   );
+  // const [adminAccess, setAdminAccess] = useState(false);
+  const adminAccess = useRef<boolean>(false);
 
-  let currentRoom = roomId ? rooms?.find((r) => r.id === roomId) : undefined;
-  let adminAccess = currentRoom
-    ? currentRoom?.created_by === session!.user.id
+  const { currentRoomData } = useCurrentRoomData(roomId);
+  adminAccess.current = currentRoomData
+    ? currentRoomData.created_by === session!.user.id
     : false;
+
+  // useEffect(() => {
+  //   setAdminAccess(
+  //     currentRoomData ? currentRoomData.created_by === session!.user.id : false,
+  //   );
+  // }, [roomId]);
 
   const signOut = async () => {
     const resp = await supabase?.auth.signOut();
