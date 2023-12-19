@@ -1,6 +1,6 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { SupabaseContext } from "../supabase/context";
+import { SupabaseContext } from "./context";
 import supabase from "../../utils/supabase/supabase";
 import { type Session } from "@supabase/supabase-js";
 
