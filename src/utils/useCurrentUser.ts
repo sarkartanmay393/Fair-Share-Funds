@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
-import supabase from "./supabase/supabase";
-import { Database } from "./supabase/types";
-import { useStoreActions } from "../store/typedHooks";
-import { useSupabaseContext } from "../provider/supabase/provider";
-import { User } from "../interfaces";
+import supabase from "./supabase/supabase.ts";
+import { Database } from "./supabase/types.ts";
+import { useStoreActions } from "../store/typedHooks.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import { User } from "../interfaces/index.ts";
 
 export const useCurrentUser = () => {
   const { session } = useSupabaseContext();
@@ -25,7 +25,7 @@ export const useCurrentUser = () => {
         (payload) => {
           console.log(payload);
           loadUser();
-        },
+        }
       )
       .subscribe();
 

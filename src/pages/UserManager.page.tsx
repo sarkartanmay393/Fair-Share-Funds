@@ -12,15 +12,13 @@ import {
   Typography,
 } from "@mui/material";
 
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useState } from "react";
-import { Room, User } from "../interfaces";
-import { useStoreActions, useStoreState } from "../store/typedHooks";
-import { useSupabaseContext } from "../provider/supabase/provider";
+import { User } from "../interfaces/index.ts";
+import { useStoreActions } from "../store/typedHooks.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCurrentRoomData } from "../utils/useCurrentRoomData";
+import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
+import { RemoveCircleOutline, PersonAdd } from "@mui/icons-material";
 
 const styles = {
   container: {
@@ -40,13 +38,12 @@ export default function RoomUserManager() {
 
   const { supabase } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
-  const navigate = useNavigate();
 
   const [willBeDeleted, setWillBeDeleted] = useState("");
   const [searchInfo, setSearchInfo] = useState("");
   const [addButtonLoading, setAddButtonLoading] = useState(false);
   const [roomUsers, setRoomUsers] = useState<User[] | undefined>();
-  const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
+  const [, setDeleteButtonLoading] = useState(false);
 
   const { currentRoomData } = useCurrentRoomData(roomId);
 
@@ -80,8 +77,9 @@ export default function RoomUserManager() {
         .select(`id, rooms_id`)
         .eq(isEmail ? "email" : "username", searchInfo)
         .single();
-      if (resp?.error) {
-        alert(resp.error.message);
+
+      if (!resp || resp?.error) {
+        alert(resp?.error.message);
         setAddButtonLoading(false);
         return;
       }
@@ -94,7 +92,7 @@ export default function RoomUserManager() {
 
       supabase
         ?.from("users")
-        .update({ rooms_id: [...resp?.data.rooms_id, roomId] })
+        .update({ rooms_id: [...resp.data.rooms_id, roomId] })
         .eq("id", resp?.data.id)
         .then(({ error }) => {
           if (error) {
@@ -106,7 +104,7 @@ export default function RoomUserManager() {
 
       supabase
         ?.from("rooms")
-        .update({ users_id: [...currentRoomData!.users_id, resp?.data.id] })
+        .update({ users_id: [...currentRoomData.users_id, resp?.data.id] })
         .eq(`id`, roomId)
         .then(({ error }) => {
           if (error) {
@@ -127,7 +125,7 @@ export default function RoomUserManager() {
     setWillBeDeleted(user.id);
     setDeleteButtonLoading(true);
     const handleSupabaseOperations = async () => {
-      let updateRoomsId = user.rooms_id?.filter((id) => id !== roomId);
+      const updateRoomsId = user.rooms_id?.filter((id) => id !== roomId);
       const resp = await supabase
         ?.from("users")
         .update({ rooms_id: updateRoomsId })
@@ -139,8 +137,8 @@ export default function RoomUserManager() {
         return;
       }
 
-      let updateUsersId = currentRoomData?.users_id.filter(
-        (id) => id !== user.id,
+      const updateUsersId = currentRoomData?.users_id.filter(
+        (id) => id !== user.id
       );
       const resp2 = await supabase
         ?.from("rooms")
@@ -185,9 +183,9 @@ export default function RoomUserManager() {
           type="button"
           aria-label="search"
           sx={{ width: "10%", p: 2 }}
-          onClick={addButtonLoading ? () => {} : handleAddNewUser}
+          onClick={addButtonLoading ? () => null : handleAddNewUser}
         >
-          {addButtonLoading ? <CircularProgress /> : <PersonAddIcon />}
+          {addButtonLoading ? <CircularProgress /> : <PersonAdd />}
         </IconButton>
       </Box>
       <Box display="flex" width="100%">
@@ -207,7 +205,7 @@ export default function RoomUserManager() {
                   {willBeDeleted === user.id ? (
                     <CircularProgress />
                   ) : (
-                    <RemoveCircleOutlineIcon />
+                    <RemoveCircleOutline />
                   )}
                 </IconButton>
               }

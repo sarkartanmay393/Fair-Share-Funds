@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import supabase from "./supabase/supabase";
-import { Database } from "./supabase/types";
-import { useStoreActions, useStoreState } from "../store/typedHooks";
+import supabase from "./supabase/supabase.ts";
+import { Database } from "./supabase/types.ts";
+import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 
 export const useRoomSyncronizer = () => {
   const { setRooms } = useStoreActions((action) => action);
@@ -20,7 +20,7 @@ export const useRoomSyncronizer = () => {
         { event: "*", schema: "public", table: "rooms" },
         (payload) => {
           console.log(payload);
-        },
+        }
       )
       .subscribe();
 

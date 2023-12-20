@@ -5,11 +5,11 @@ import ReactDOM from "react-dom/client";
 import { StoreProvider, createStore } from "easy-peasy";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
-import App from "./App";
-import Theme from "./theme/theme";
-import globalStore from "./store/globalStore";
-import reportWebVitals from "./reportWebVitals";
-import SupabaseContextProvider from "./provider/supabase/provider";
+import App from "./App.tsx";
+import Theme from "./theme/theme.ts";
+import globalStore from "./store/globalStore.ts";
+import reportWebVitals from "./reportWebVitals.ts";
+import SupabaseContextProvider from "./provider/supabase/provider.tsx";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

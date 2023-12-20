@@ -1,11 +1,16 @@
 import { LoadingButton } from "@mui/lab";
 import { Box, TextField, CircularProgress } from "@mui/material";
+import { FormikValues } from "formik/dist/types.js";
+import { ChangeEventHandler, FormEventHandler } from "react";
 
-interface ISignupBox {
-  signupFormik: any;
+interface ISignupBox extends FormikValues {
+  values: FormikValues;
+  errors: FormikValues;
+  handleSubmit: FormEventHandler<HTMLFormElement>;
+  handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 }
 
-export const SignupBox = ({ signupFormik }: ISignupBox) => {
+export const SignupBox = ({ signupFormik }: { signupFormik: ISignupBox }) => {
   return (
     <Box
       onSubmit={signupFormik.handleSubmit}

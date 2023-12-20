@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Menu,
+  AppBar,
+  Toolbar,
+  MenuItem,
+  IconButton,
+  Typography,
+  Avatar,
+  Button,
+  ListItemIcon,
+} from "@mui/material";
+import { ExpandMore, AccountCircle, Settings } from "@mui/icons-material";
 
-import Menu from "@mui/material/Menu";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import MenuItem from "@mui/material/MenuItem";
-import { Settings } from "@mui/icons-material";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Avatar, Button, ListItemIcon } from "@mui/material";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-
-import { useStoreState } from "../store/typedHooks";
-import { useSupabaseContext } from "../provider/supabase/provider";
-import { useCurrentRoomData } from "../utils/useCurrentRoomData";
+import { useStoreState } from "../store/typedHooks.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
 import Logo from "../assets/logo.png";
 import BackIcon from "../assets/icons8-back-36.png";
 
@@ -28,14 +29,14 @@ export default function CustomAppbar() {
   const { appbarTitle } = useStoreState((state) => state);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [anchorElExpand, setAnchorElExpand] = useState<HTMLElement | null>(
-    null,
+    null
   );
   // const [adminAccess, setAdminAccess] = useState(false);
   const adminAccess = useRef<boolean>(false);
 
   const { currentRoomData } = useCurrentRoomData(roomId);
   adminAccess.current = currentRoomData
-    ? currentRoomData.created_by === session!.user.id
+    ? currentRoomData.created_by === session?.user.id
     : false;
 
   const signOut = async () => {
@@ -88,7 +89,7 @@ export default function CustomAppbar() {
                 setAnchorElExpand(event.currentTarget)
               }
             >
-              <ExpandMoreIcon />
+              <ExpandMore />
             </IconButton>
             <Menu
               anchorEl={anchorElExpand}

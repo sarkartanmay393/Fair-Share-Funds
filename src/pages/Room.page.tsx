@@ -1,26 +1,26 @@
-import { useEffect, useRef, useState } from "react";
-import { Box, Grid } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 
-import InputBar from "../components/Room/Input";
-import { Database } from "../utils/supabase/types";
-import { useStoreActions } from "../store/typedHooks";
-import { useSupabaseContext } from "../provider/supabase/provider";
-import TransactionsHistory from "../components/Room/TransactionsHistory";
-import { useCurrentRoomData } from "../utils/useCurrentRoomData";
-import MasterStatement from "../components/Room/MasterStatement";
-import { MasterSheet } from "../interfaces";
+import InputBar from "../components/Room/Input.tsx";
+import { Database } from "../utils/supabase/types.ts";
+import { useStoreActions } from "../store/typedHooks.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import TransactionsHistory from "../components/Room/TransactionsHistory.tsx";
+import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
+import MasterStatement from "../components/Room/MasterStatement.tsx";
+import { MasterSheet } from "../interfaces/index.ts";
 
 export default function RoomPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const trnxContainerRef = useRef<HTMLDivElement | null>(null);
+  // const trnxContainerRef = useRef<HTMLDivElement | null>(null);
   const { supabase, session } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
   const [roomUsers, setRoomUsers] =
     useState<Database["public"]["Tables"]["users"]["Row"][]>();
 
-  const { currentRoomData, currentTransactions } = useCurrentRoomData(id || "");
+  const { currentRoomData } = useCurrentRoomData(id || "");
   const masterStatement = currentRoomData?.master_sheet as MasterSheet;
   const userPOVstatement =
     masterStatement && masterStatement[session?.user.id || ""];
@@ -40,7 +40,9 @@ export default function RoomPage() {
       if (users) {
         setRoomUsers(users);
       }
-    } catch (e) {}
+    } catch (e) {
+      null;
+    }
   };
 
   useEffect(() => {

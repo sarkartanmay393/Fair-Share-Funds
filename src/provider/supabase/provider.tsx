@@ -1,7 +1,7 @@
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
-import { SupabaseContext } from "./context";
-import supabase from "../../utils/supabase/supabase";
+import { SupabaseContext } from "./context.ts";
+import supabase from "../../utils/supabase/supabase.ts";
 import { type Session } from "@supabase/supabase-js";
 
 export default function SupabaseContextProvider({
@@ -10,10 +10,10 @@ export default function SupabaseContextProvider({
   children: ReactNode;
 }) {
   const localSession = localStorage.getItem(
-    "sb-jawvorkhuixgggewwkxn-auth-token",
+    "sb-jawvorkhuixgggewwkxn-auth-token"
   );
   const [session, setSession] = useState<Session | null>(
-    localSession ? JSON.parse(localSession) : null,
+    localSession ? JSON.parse(localSession) : null
   );
 
   useEffect(() => {
@@ -38,5 +38,3 @@ export default function SupabaseContextProvider({
     </SupabaseContext.Provider>
   );
 }
-
-export const useSupabaseContext = () => useContext(SupabaseContext);

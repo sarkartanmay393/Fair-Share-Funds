@@ -7,7 +7,7 @@ import {
   Card,
   Typography,
 } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { KeyboardArrowDown } from "@mui/icons-material";
 
 const MasterStatement = ({
   POVstatement,
@@ -39,7 +39,7 @@ const MasterStatement = ({
     >
       <Accordion>
         <AccordionSummary
-          expandIcon={<KeyboardArrowDownIcon />}
+          expandIcon={<KeyboardArrowDown />}
           aria-controls="panel1a-content"
           id="panel1a-header"
         >

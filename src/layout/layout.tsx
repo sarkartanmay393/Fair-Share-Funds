@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid, Toolbar } from "@mui/material";
-import CustomAppbar from "../components/CustomAppbar";
+import CustomAppbar from "../components/CustomAppbar.tsx";
 
 interface ILayout {
   children: React.ReactElement;

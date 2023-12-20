@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import supabase from "./supabase/supabase";
-import { Database } from "./supabase/types";
-import { Room, Transaction } from "../interfaces";
+import supabase from "./supabase/supabase.ts";
+import { Database } from "./supabase/types.ts";
+import { Room, Transaction } from "../interfaces/index.ts";
 
 export const useCurrentRoomData = (roomId: string) => {
   const [currentRoomData, setCurrentRoomData] = useState<Room>();

@@ -2,13 +2,12 @@ import React, { useEffect } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { ToggleButton, Alert, Box, ToggleButtonGroup } from "@mui/material";
-
-import { LoginBox } from "../components/LoginBox";
-import { SignupBox } from "../components/SignupBox";
-import { useSupabaseContext } from "../provider/supabase/provider";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useStoreActions } from "../store/typedHooks";
-import { User } from "../interfaces";
+
+import { LoginBox } from "../components/LoginBox.tsx";
+import { SignupBox } from "../components/SignupBox.tsx";
+import { User } from "../interfaces/index.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 
 const style = {
   position: "absolute",
@@ -32,13 +31,12 @@ export const AuthPage = () => {
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState({ message: "", spec: "" });
   const { supabase, session } = useSupabaseContext();
-  const { setUser } = useStoreActions((a) => a);
 
   const navigate = useNavigate();
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: string,
+    newAlignment: string
   ) => {
     event.preventDefault();
     setAlignment(newAlignment);
@@ -141,6 +139,8 @@ export const AuthPage = () => {
     if (success.spec === "login") {
       navigate("/");
     }
+
+    console.log(typeof loginFormik);
   }, [success]);
 
   return (

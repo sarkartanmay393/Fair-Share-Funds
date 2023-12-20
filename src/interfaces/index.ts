@@ -1,7 +1,7 @@
 // import { Database } from "../utils/supabase/types";
 
 import { Action } from "easy-peasy";
-import { Database, Json } from "../utils/supabase/types";
+import { Json } from "../utils/supabase/types.ts";
 
 export enum TransactionType {
   Pay = "Pay",

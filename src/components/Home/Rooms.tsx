@@ -11,9 +11,9 @@ import {
   Typography,
 } from "@mui/material";
 
-import { Room } from "../../interfaces";
-import { useSupabaseContext } from "../../provider/supabase/provider";
-import { useCurrentUser } from "../../utils/useCurrentUser";
+import { Room } from "../../interfaces/index.ts";
+import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
+import { useCurrentUser } from "../../utils/useCurrentUser.ts";
 
 const styles: { [key: string]: SxProps<Theme> } = {
   roomcard: {

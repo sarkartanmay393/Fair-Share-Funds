@@ -5,22 +5,17 @@ import {
   Button,
   Card,
   CircularProgress,
-  Divider,
-  Grid,
   List,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
   Typography,
 } from "@mui/material";
-import { User } from "../../interfaces";
+import { User } from "../../interfaces/index.ts";
 
-import DoneIcon from "@mui/icons-material/Done";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import CloseIcon from "@mui/icons-material/Close";
-import { useSupabaseContext } from "../../provider/supabase/provider";
-import { useCurrentRoomData } from "../../utils/useCurrentRoomData";
-import React from "react";
+import { Done, DoneAll, Close } from "@mui/icons-material";
+
+import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
+import { useCurrentRoomData } from "../../utils/useCurrentRoomData.ts";
+import { Transaction } from "../../interfaces/index.ts";
 
 const TransactionsHistory = ({
   roomUsers,
@@ -30,7 +25,7 @@ const TransactionsHistory = ({
   roomId: string;
 }) => {
   const { session, supabase } = useSupabaseContext();
-  const { currentRoomData, currentTransactions } = useCurrentRoomData(roomId);
+  const { currentTransactions } = useCurrentRoomData(roomId);
   const [isLoading, setIsLoading] = useState(false);
   const approveTrnx = async (trnxId: string) => {
     setIsLoading(true);
@@ -43,12 +38,12 @@ const TransactionsHistory = ({
       return;
     }
 
-    const updateMasterSheet = await supabase
-      ?.from("rooms")
-      .update({ master_sheet: {} })
-      .eq("id", currentRoomData?.id);
-    // TODO:
-    // recalculate master sheet in room
+    // const updateMasterSheet = await supabase
+    //   ?.from("rooms")
+    //   .update({ master_sheet: {} })
+    //   .eq("id", currentRoomData?.id);
+    // // TODO:
+    // // recalculate master sheet in room
 
     setIsLoading(false);
   };
@@ -66,7 +61,7 @@ const TransactionsHistory = ({
           height: "100%",
         }}
       >
-        {currentTransactions?.map((trnx, i) => {
+        {currentTransactions?.map((trnx: Transaction) => {
           const fromUser = roomUsers?.find((u) => u.id === trnx.from_user);
           const toUserSelf = session?.user.id === trnx.to_user;
           return (
@@ -125,9 +120,9 @@ const TransactionsHistory = ({
                     Rs {trnx.amount}
                   </Typography>
                   {trnx.approved ? (
-                    <DoneAllIcon sx={{ fontSize: "18px", opacity: 0.6 }} />
+                    <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />
                   ) : (
-                    <CloseIcon sx={{ fontSize: "18px", opacity: 0.6 }} />
+                    <Close sx={{ fontSize: "18px", opacity: 0.6 }} />
                   )}
                   {toUserSelf && !trnx.approved && (
                     <Button
@@ -144,7 +139,7 @@ const TransactionsHistory = ({
                       {isLoading ? (
                         <CircularProgress />
                       ) : (
-                        <DoneIcon sx={{ fontSize: "18px" }} />
+                        <Done sx={{ fontSize: "18px" }} />
                       )}
                     </Button>
                   )}
@@ -155,34 +150,6 @@ const TransactionsHistory = ({
         })}
       </List>
     </Box>
-  );
-
-  // eslint-disable-next-line no-unreachable
-  return (
-    <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
-      <ListItem alignItems="flex-start">
-        <ListItemAvatar>
-          <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-        </ListItemAvatar>
-        <ListItemText
-          primary="Brunch this weekend?"
-          secondary={
-            <React.Fragment>
-              <Typography
-                sx={{ display: "inline" }}
-                component="span"
-                variant="body2"
-                color="text.primary"
-              >
-                Ali Connors
-              </Typography>
-              {" — I'll be in your neighborhood doing errands this…"}
-            </React.Fragment>
-          }
-        />
-      </ListItem>
-      <Divider variant="inset" component="li" />
-    </List>
   );
 };
 

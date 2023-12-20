@@ -56,13 +56,6 @@ const Theme = (mode: PaletteMode) => {
 };
 
 declare module "@mui/material/styles" {
-  interface Theme {
-    custom: {};
-  }
-
-  interface ThemeOptions {
-    custom?: {};
-  }
   interface BreakpointOverrides {
     xs: true;
     sm: true;

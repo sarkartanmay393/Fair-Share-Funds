@@ -1,11 +1,17 @@
 import { LoadingButton } from "@mui/lab";
 import { Box, TextField, CircularProgress } from "@mui/material";
+import { FormikValues } from "formik";
+import { FormEventHandler, ChangeEventHandler } from "react";
 
 interface ILoginBox {
-  loginFormik: any;
+  values: FormikValues;
+  errors: FormikValues;
+  handleSubmit: FormEventHandler<HTMLFormElement>;
+  handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  isSubmitting: boolean;
 }
 
-export const LoginBox = ({ loginFormik }: ILoginBox) => {
+export const LoginBox = ({ loginFormik }: { loginFormik: ILoginBox }) => {
   return (
     <Box
       onSubmit={loginFormik.handleSubmit}

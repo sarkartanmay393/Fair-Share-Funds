@@ -1,47 +1,13 @@
 import * as React from "react";
-import { SxProps, Theme, styled } from "@mui/material/styles";
+import { SxProps, Theme } from "@mui/material/styles";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import InputBase from "@mui/material/InputBase";
 import { Avatar, Box, IconButton, TextField, Typography } from "@mui/material";
 import { Send } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Database } from "../../utils/supabase/types";
-import { useSupabaseContext } from "../../provider/supabase/provider";
-
-const BootstrapInput = styled(InputBase)(({ theme }) => ({
-  "label + &": {
-    marginTop: theme.spacing(3),
-  },
-  "& .MuiInputBase-input": {
-    borderRadius: 4,
-    position: "relative",
-    backgroundColor: theme.palette.background.paper,
-    border: "1px solid #ced4da",
-    fontSize: 16,
-    padding: "10px 26px 10px 12px",
-    transition: theme.transitions.create(["border-color", "box-shadow"]),
-    // Use the system font instead of the default Roboto font.
-    fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
-      '"Segoe UI"',
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(","),
-    "&:focus": {
-      borderRadius: 4,
-      borderColor: "#80bdff",
-      boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-    },
-  },
-}));
+import { Database } from "../../utils/supabase/types.ts";
+import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
 
 interface InputProps {
   styles?: SxProps<Theme>;
@@ -53,6 +19,7 @@ interface InputProps {
 export default function InputBar({ roomData, roomUsers }: InputProps) {
   const { supabase, session } = useSupabaseContext();
   const [error, setError] = React.useState("");
+  console.log(error);
 
   const useTransactionInputFormik = useFormik({
     initialValues: { toUser: "self", transactionType: "Pay", amount: "" },
@@ -165,7 +132,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
                       </Typography>
                     </Avatar>
                   </MenuItem>
-                ),
+                )
             )}
           <MenuItem value={"self"}>
             <Avatar>

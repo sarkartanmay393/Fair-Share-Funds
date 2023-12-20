@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Box, CircularProgress, Fab, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { Room } from "../interfaces";
-import { useSupabaseContext } from "../provider/supabase/provider";
-import generateRandomName from "../utils/generateRandomName";
-import { useStoreState } from "../store/typedHooks";
-import AddIcon from "@mui/icons-material/Add";
-import { Rooms } from "../components/Home/Rooms";
+import { Room } from "../interfaces/index.ts";
+import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import generateRandomName from "../utils/generateRandomName.ts";
+import { useStoreState } from "../store/typedHooks.ts";
+import { Rooms } from "../components/Home/Rooms.tsx";
+
+import { Add } from "@mui/icons-material";
 import LandingAvatar from "../assets/landing-avatar.svg";
 
 export default function Homepage() {
@@ -19,40 +20,44 @@ export default function Homepage() {
 
   // Creates a new rooms in db and add the room id to current user
   const handleNewRoom = () => {
+    if (!supabase) {
+      return;
+    }
     const triggerNewRoomCreation = async () => {
       setLoading(true);
       try {
         const name = generateRandomName();
         const newroom = {
-          users_id: [`${user!.id}`],
+          users_id: [`${user?.id}`],
           name: `Room ${name} `,
-          created_by: user!.id,
+          created_by: user?.id,
         } as Room;
 
-        const { data, error } = await supabase!
+        const { data, error } = await supabase
           .from("rooms")
           .insert(newroom)
           .select()
           .single();
+
         if (error) {
           setLoading(false);
           alert(error.message);
           return;
         }
 
-        let currentRoomsOfUser = user!.rooms_id;
+        let currentRoomsOfUser = user?.rooms_id;
         if (currentRoomsOfUser) {
           currentRoomsOfUser.push(data.id);
         } else {
           currentRoomsOfUser = [data.id];
         }
 
-        const resp = await supabase!
+        const resp = await supabase
           .from("users")
           .update({
             rooms_id: currentRoomsOfUser,
           })
-          .eq("id", user!.id);
+          .eq("id", user?.id);
         if (resp.error) {
           setLoading(false);
           alert(resp.error.message);
@@ -60,7 +65,9 @@ export default function Homepage() {
         }
 
         navigate(`/room/${data.id}`);
-      } catch (e) {}
+      } catch (e) {
+        null;
+      }
       setLoading(false);
     };
 
@@ -100,7 +107,7 @@ export default function Homepage() {
         color="secondary"
         aria-label="add"
       >
-        {loading ? <CircularProgress /> : <AddIcon />}
+        {loading ? <CircularProgress /> : <Add />}
       </Fab>
     </Box>
   );
