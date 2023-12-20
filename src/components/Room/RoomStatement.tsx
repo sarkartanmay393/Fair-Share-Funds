@@ -47,11 +47,11 @@ const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
           <Typography>Statement</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          {/* {!(roomUsers?.length || 0 > 1) && ( */}
+          {!(roomUsers?.length || 0 > 1) && (
           <Typography textAlign="center" variant="body1" sx={{ opacity: 0.7 }}>
             No users in the room
           </Typography>
-          {/* )} */}
+          )}
           {roomUsers &&
             roomUsers.map((u, index) => {
               const name = u.name;
@@ -91,7 +91,7 @@ const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
-                        {amount}
+                        Rs. {amount}
                       </Typography>
                     </Box>
                   </Box>

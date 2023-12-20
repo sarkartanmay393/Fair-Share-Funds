@@ -93,13 +93,16 @@ export default function Homepage() {
         // mt={6}
         px={2}
         display="flex"
-        bgcolor="#89a7d9"
+        bgcolor="#89a1dd"
         borderRadius="100px 8px 80px 8px"
-        // alignItems="center"
+        alignItems="center"
       >
         <img src={LandingAvatar} alt="fsf landing page avatar" />
-        <Typography fontWeight={600} fontSize={{ xs: 26, sm: 32 }}>
-          Hi, {user?.username}
+        <Typography fontWeight={500} fontSize={{ xs: 26, sm: 32 }}>
+          Hi,{" "}
+          <Typography component='span' fontWeight={600} fontSize={{ xs: 26, sm: 32 }}>
+            {user?.name}
+          </Typography>
         </Typography>
       </Box>
       <Rooms />

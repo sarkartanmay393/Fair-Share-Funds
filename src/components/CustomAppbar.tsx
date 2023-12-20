@@ -32,7 +32,6 @@ export default function CustomAppbar() {
   const [anchorElExpand, setAnchorElExpand] = useState<HTMLElement | null>(
     null
   );
-  // const [adminAccess, setAdminAccess] = useState(false);
   const adminAccess = useRef<boolean>(false);
 
   const { currentRoomData } = useCurrentRoomData(roomId);
@@ -128,7 +127,7 @@ export default function CustomAppbar() {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               <MenuItem
-                disabled={pathname.includes("manage") || !adminAccess}
+                disabled={pathname.includes("manage") || !adminAccess.current}
                 onClick={() =>
                   !pathname.includes("manage") && navigate(`${pathname}/manage`)
                 }

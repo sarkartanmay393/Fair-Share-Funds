@@ -53,9 +53,6 @@ const TransactionCard = ({
       Number(toUserStatement?.getAmount(trnx.from_user) || 0) + trnx.amount;
     toUserStatement?.setAmount(trnx.from_user, tus_fua + "");
 
-    ms?.setStatement(trnx.from_user, fromUserStatement);
-    ms?.setStatement(trnx.to_user, toUserStatement);
-
     const updateMasterSheet = await supabase
       ?.from("rooms")
       .update({ master_sheet: ms?.toJson() })
@@ -70,11 +67,6 @@ const TransactionCard = ({
     setIsLoading(false);
   };
 
-  // const avatarText = fromUser?.name
-  //   .toUpperCase()
-  //   .split(" ")
-  //   .map((c) => c[0])
-  //   .toString();
   const trnxBy = roomUsers?.find((u) => u.id === trnx.from_user)?.name;
   const trnxTo = roomUsers?.find((u) => u.id === trnx.to_user)?.name;
 
@@ -113,9 +105,9 @@ const TransactionCard = ({
       <Box sx={{ display: "flex", alignItems: "center", columnGap: 2 }}>
         <Typography
           sx={{ fontSize: "15px", fontWeight: "600" }}
-          color={trnx.type === "Pay" ? "lightgreen" : "#FF6961"}
+          color={trnx.type === "Pay" ? "lightgreen" : "#FF6966"}
         >
-          Rs {trnx.amount}
+          Rs. {trnx.amount}
         </Typography>
         {trnx.approved && <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />}
         {toUserSelf && !trnx.approved && (

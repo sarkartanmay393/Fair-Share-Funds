@@ -42,6 +42,10 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           to_user: values.toUser,
           type: values.transactionType,
         } as Database["public"]["Tables"]["transactions"]["Row"];
+        if (values.transactionType === "Due") {
+          newTransaction.amount = (-newTransaction.amount);
+        }
+
         const sendTransaction = async () => {
           try {
             const resp = await supabase

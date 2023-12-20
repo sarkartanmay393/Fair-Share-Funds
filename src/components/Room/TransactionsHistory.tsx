@@ -19,14 +19,19 @@ const TransactionsHistory = ({
   return (
     <Box
       width="100%"
-      height="calc(100vh - 64px)"
+      height="calc(100vh - 132px)"
       paddingX={1}
       border="px solid green"
     >
       <List
+        dense
         sx={{
+          // border: '1px solid red',
           overflowY: "scroll",
           height: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: "end",
         }}
       >
         {currentTransactions?.map((trnx: Transaction) => {
@@ -38,6 +43,7 @@ const TransactionsHistory = ({
                 fromUser={fromUser}
                 toUserSelf={toUserSelf}
                 trnx={trnx}
+                roomUsers={roomUsers}
               />
             </ListItem>
           );
