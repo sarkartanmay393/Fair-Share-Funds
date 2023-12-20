@@ -28,7 +28,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
       amount: Yup.number().moreThan(0, "amount must > 0"),
     }),
     // enableReinitialize: true,
-    onSubmit: (values, { setSubmitting, resetForm }) => {
+    onSubmit: (values, { setSubmitting, resetForm, setValues }) => {
       setTimeout(() => {
         setError("");
         if (values.toUser === session?.user.id) {

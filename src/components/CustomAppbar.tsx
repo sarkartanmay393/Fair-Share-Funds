@@ -16,6 +16,7 @@ import { ExpandMore, AccountCircle, Settings } from "@mui/icons-material";
 import { useStoreState } from "../store/typedHooks.ts";
 import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
+
 import Logo from "../assets/logo.png";
 import BackIcon from "../assets/icons8-back-36.png";
 

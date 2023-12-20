@@ -4,6 +4,7 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  Input,
   InputBase,
   List,
   ListItem,
@@ -160,30 +161,33 @@ export default function RoomUserManager() {
 
   return (
     <Box sx={{ ...styles.container }}>
-      <Grid container mb={2} width="100%" direction="row">
-        <Typography variant="h6" component="h2">
+      <Grid container mb={2} width="100%" justifyContent="center">
+        <Typography variant="h6" component="h2" fontWeight={600}>
           Manager Room Users
         </Typography>
       </Grid>
       <Box
+        component="form"
         display="flex"
         px={2}
         width="100%"
         justifyContent="space-between"
-        border="1px solid darkblue"
+        border="1px solid"
         borderRadius="8px"
       >
-        <InputBase
+        <Input
+          disableUnderline
           value={searchInfo}
           onChange={(e) => setSearchInfo(e.target.value)}
           sx={{ width: "85%", border: "px solid red" }}
           placeholder="Type username or email"
         />
         <IconButton
-          type="button"
+          type="submit"
           aria-label="search"
           sx={{ width: "10%", p: 2 }}
-          onClick={addButtonLoading ? () => null : handleAddNewUser}
+          disabled={addButtonLoading}
+          onClick={handleAddNewUser}
         >
           {addButtonLoading ? <CircularProgress /> : <PersonAdd />}
         </IconButton>

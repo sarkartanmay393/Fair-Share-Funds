@@ -4,8 +4,8 @@ import { useFormik } from "formik";
 import { ToggleButton, Alert, Box, ToggleButtonGroup } from "@mui/material";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import { LoginBox } from "../components/LoginBox.tsx";
-import { SignupBox } from "../components/SignupBox.tsx";
+import { LoginBox } from "../components/Auth/LoginBox.tsx";
+import { SignupBox } from "../components/Auth/SignupBox.tsx";
 import { User } from "../interfaces/index.ts";
 import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 
