@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import supabase from "./supabase/supabase.ts";
 import { Database } from "./supabase/types.ts";
 import { Room, Transaction } from "../interfaces/index.ts";
+import { MasterStatement } from "./masterSheet.ts";
 
 export const useCurrentRoomData = (roomId: string) => {
   const [currentRoomData, setCurrentRoomData] = useState<Room>();
@@ -24,7 +25,7 @@ export const useCurrentRoomData = (roomId: string) => {
         (payload) => {
           console.log(payload);
           loadLatestData();
-        },
+        }
       )
       .subscribe();
 
@@ -42,9 +43,17 @@ export const useCurrentRoomData = (roomId: string) => {
               setError(true);
               return;
             }
-            setCurrentRoomData(
-              data as Database["public"]["Tables"]["rooms"]["Row"],
-            );
+            const backendData =
+              data as Database["public"]["Tables"]["rooms"]["Row"];
+            setCurrentRoomData({
+              created_by: backendData.created_by,
+              id: backendData.id,
+              last_updated: backendData.last_updated,
+              master_sheet: new MasterStatement(backendData.master_sheet),
+              name: backendData.name,
+              transactions_id: backendData.transactions_id,
+              users_id: backendData.users_id,
+            });
 
             supabase
               .from("transactions")
@@ -57,12 +66,12 @@ export const useCurrentRoomData = (roomId: string) => {
                   return;
                 }
                 setCurrentTransactions(
-                  data as Database["public"]["Tables"]["transactions"]["Row"][],
+                  data as Database["public"]["Tables"]["transactions"]["Row"][]
                 );
                 setError(false);
                 setIsLoading(false);
               });
-          }),
+          })
       );
 
     loadLatestData();

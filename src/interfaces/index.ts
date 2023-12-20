@@ -1,7 +1,7 @@
 // import { Database } from "../utils/supabase/types";
 
 import { Action } from "easy-peasy";
-import { Json } from "../utils/supabase/types.ts";
+import { MasterStatement } from "@/utils/masterSheet.ts";
 
 export enum TransactionType {
   Pay = "Pay",
@@ -20,7 +20,7 @@ export interface Room {
   created_by: string;
   id: string;
   last_updated: string | null;
-  master_sheet: Json;
+  master_sheet: MasterStatement;
   name: string;
   transactions_id: string[] | null;
   users_id: string[];
@@ -37,12 +37,6 @@ export interface Transaction {
   room_id: string;
   to_user: string;
   type: "Pay" | "Due";
-}
-
-export interface MasterSheet {
-  [selfId: string]: {
-    [userId: string]: number;
-  };
 }
 
 export interface GlobalStore {

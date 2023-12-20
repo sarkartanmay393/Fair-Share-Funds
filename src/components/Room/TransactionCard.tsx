@@ -12,9 +12,10 @@ import { Transaction, User } from "../../interfaces/index.ts";
 import { Done, DoneAll, Close } from "@mui/icons-material";
 
 import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
+import { useCurrentRoomData } from "@/utils/useCurrentRoomData.ts";
+import { Statement } from "@/utils/masterSheet.ts";
 
 const TransactionCard = ({
-  fromUser,
   toUserSelf,
   roomUsers,
   trnx,
@@ -25,33 +26,55 @@ const TransactionCard = ({
   trnx: Transaction;
 }) => {
   const { supabase } = useSupabaseContext();
+  const { currentRoomData } = useCurrentRoomData(trnx.room_id);
   const [isLoading, setIsLoading] = useState(false);
   const approveTrnx = async (trnxId: string) => {
     setIsLoading(true);
+
     const resp = await supabase
       ?.from("transactions")
       .update({ approved: true })
       .eq("id", trnxId);
     if (resp?.error) {
+      alert("Approval failed");
       setIsLoading(false);
       return;
     }
 
-    // const updateMasterSheet = await supabase
-    //   ?.from("rooms")
-    //   .update({ master_sheet: {} })
-    //   .eq("id", currentRoomData?.id);
-    // // TODO:
-    // // recalculate master sheet in room
+    const ms = currentRoomData?.master_sheet;
+    const fromUserStatement =
+      ms?.getStatement(trnx?.from_user) || new Statement();
+    const toUserStatement = ms?.getStatement(trnx.to_user) || new Statement();
+
+    const fus_tua =
+      Number(fromUserStatement?.getAmount(trnx.to_user) || 0) + trnx.amount;
+    fromUserStatement?.setAmount(trnx.to_user, fus_tua + "");
+    const tus_fua =
+      Number(toUserStatement?.getAmount(trnx.from_user) || 0) + trnx.amount;
+    toUserStatement?.setAmount(trnx.from_user, tus_fua + "");
+
+    ms?.setStatement(trnx.from_user, fromUserStatement);
+    ms?.setStatement(trnx.to_user, toUserStatement);
+
+    const updateMasterSheet = await supabase
+      ?.from("rooms")
+      .update({ master_sheet: ms?.toJson() })
+      .eq("id", currentRoomData?.id);
+
+    if (updateMasterSheet?.error) {
+      alert("Failed master sheet update");
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(false);
   };
 
-  const avatarText = fromUser?.name
-    .toUpperCase()
-    .split(" ")
-    .map((c) => c[0])
-    .toString();
+  // const avatarText = fromUser?.name
+  //   .toUpperCase()
+  //   .split(" ")
+  //   .map((c) => c[0])
+  //   .toString();
   const trnxBy = roomUsers?.find((u) => u.id === trnx.from_user)?.name;
   const trnxTo = roomUsers?.find((u) => u.id === trnx.to_user)?.name;
 
@@ -70,11 +93,7 @@ const TransactionCard = ({
       }}
     >
       <Box sx={{ display: "flex", gap: "18px" }} border="px solid red">
-        <Avatar>
-          {avatarText !== "_" && (
-            <Typography color="white">{avatarText}</Typography>
-          )}
-        </Avatar>
+        <Avatar>{(trnxBy ?? "Noname").trim().charAt(0)}</Avatar>
         <Box
           sx={{
             display: "flex",
@@ -98,11 +117,7 @@ const TransactionCard = ({
         >
           Rs {trnx.amount}
         </Typography>
-        {trnx.approved ? (
-          <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />
-        ) : (
-          <Close sx={{ fontSize: "18px", opacity: 0.6 }} />
-        )}
+        {trnx.approved && <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />}
         {toUserSelf && !trnx.approved && (
           <Button
             disableRipple
@@ -121,6 +136,9 @@ const TransactionCard = ({
               <Done sx={{ fontSize: "18px" }} />
             )}
           </Button>
+        )}
+        {!toUserSelf && !trnx.approved && (
+          <Close sx={{ fontSize: "18px", opacity: 0.6 }} />
         )}
       </Box>
     </Card>

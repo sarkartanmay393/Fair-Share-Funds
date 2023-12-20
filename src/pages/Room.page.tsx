@@ -8,8 +8,7 @@ import { useStoreActions } from "../store/typedHooks.ts";
 import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 import TransactionsHistory from "../components/Room/TransactionsHistory.tsx";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
-import MasterStatement from "../components/Room/MasterStatement.tsx";
-import { MasterSheet } from "../interfaces/index.ts";
+import RoomStatement from "../components/Room/RoomStatement.tsx";
 
 export default function RoomPage() {
   const { id } = useParams();
@@ -21,9 +20,6 @@ export default function RoomPage() {
     useState<Database["public"]["Tables"]["users"]["Row"][]>();
 
   const { currentRoomData } = useCurrentRoomData(id || "");
-  const masterStatement = currentRoomData?.master_sheet as MasterSheet;
-  const userPOVstatement =
-    masterStatement && masterStatement[session?.user.id || ""];
 
   const fetch = async () => {
     try {
@@ -47,14 +43,15 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (currentRoomData) {
-      setAppbarTitle(currentRoomData.name || "FSF Room");
+      setAppbarTitle(currentRoomData.name || "Room ~");
     }
 
     fetch();
     return () => {
-      setAppbarTitle("Fair Share Funds");
+      setAppbarTitle("Roompay");
     };
   }, [currentRoomData]);
+
 
   return (
     <Box
@@ -64,13 +61,13 @@ export default function RoomPage() {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      // justifyContent="end"
-      // px={4}
-      // pt="64px"
-      // pb="135px"
-      // sx={{ overflowY: "scroll" }}
     >
-      <MasterStatement POVstatement={userPOVstatement} roomUsers={roomUsers} />
+      <RoomStatement
+        statement={currentRoomData?.master_sheet.getStatement(
+          session?.user.id || ""
+        )}
+        roomUsers={roomUsers}
+      />
       <TransactionsHistory roomUsers={roomUsers} roomId={id!} />
       <InputBar roomData={currentRoomData} roomUsers={roomUsers} />
     </Box>

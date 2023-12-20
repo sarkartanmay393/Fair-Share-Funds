@@ -8,18 +8,18 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Database } from "../../utils/supabase/types.ts";
 import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
+import { Room } from "@/interfaces/index.ts";
 
 interface InputProps {
   styles?: SxProps<Theme>;
   usersId?: string[];
   roomUsers?: Database["public"]["Tables"]["users"]["Row"][];
-  roomData?: Database["public"]["Tables"]["rooms"]["Row"];
+  roomData?: Room;
 }
 
 export default function InputBar({ roomData, roomUsers }: InputProps) {
   const { supabase, session } = useSupabaseContext();
-  const [error, setError] = React.useState("");
-  console.log(error);
+  const [, setError] = React.useState("");
 
   const useTransactionInputFormik = useFormik({
     initialValues: { toUser: "self", transactionType: "Pay", amount: "" },
@@ -28,7 +28,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
       amount: Yup.number().moreThan(0, "amount must > 0"),
     }),
     // enableReinitialize: true,
-    onSubmit: (values, { setSubmitting, resetForm, setValues }) => {
+    onSubmit: (values, { setSubmitting, resetForm }) => {
       setTimeout(() => {
         setError("");
         if (values.toUser === session?.user.id) {

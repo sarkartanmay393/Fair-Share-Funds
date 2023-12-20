@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Box, CircularProgress, Fab, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { Room } from "../interfaces/index.ts";
 import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 import generateRandomName from "../utils/generateRandomName.ts";
 import { useStoreState } from "../store/typedHooks.ts";
@@ -10,10 +9,11 @@ import { Rooms } from "../components/Home/Rooms.tsx";
 
 import { Add } from "@mui/icons-material";
 import LandingAvatar from "../assets/landing-avatar.svg";
+import { Database } from "@/utils/supabase/types.js";
 
 export default function Homepage() {
   const navigate = useNavigate();
-  const { supabase } = useSupabaseContext();
+  const { supabase, session } = useSupabaseContext();
   const { user } = useStoreState((state) => state);
 
   const [loading, setLoading] = useState(false);
@@ -27,11 +27,13 @@ export default function Homepage() {
       setLoading(true);
       try {
         const name = generateRandomName();
+
         const newroom = {
           users_id: [`${user?.id}`],
           name: `Room ${name} `,
           created_by: user?.id,
-        } as Room;
+          master_sheet: JSON.parse(`{"${session?.user.id}":null}`),
+        } as Database["public"]["Tables"]["rooms"]["Row"];
 
         const { data, error } = await supabase
           .from("rooms")

@@ -4,8 +4,6 @@ import {
   CircularProgress,
   Grid,
   IconButton,
-  Input,
-  InputBase,
   List,
   ListItem,
   ListItemAvatar,
@@ -19,7 +17,9 @@ import { useStoreActions } from "../store/typedHooks.ts";
 import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
 import { useEffect } from "react";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
-import { RemoveCircleOutline, PersonAdd } from "@mui/icons-material";
+import { RemoveCircleOutline } from "@mui/icons-material";
+import AddUserInput from "@/components/Manage/AddUserInput.tsx";
+import { Statement } from "@/utils/masterSheet.ts";
 
 const styles = {
   container: {
@@ -37,7 +37,7 @@ export default function RoomUserManager() {
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
 
-  const { supabase } = useSupabaseContext();
+  const { supabase, session } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
 
   const [willBeDeleted, setWillBeDeleted] = useState("");
@@ -47,6 +47,7 @@ export default function RoomUserManager() {
   const [, setDeleteButtonLoading] = useState(false);
 
   const { currentRoomData } = useCurrentRoomData(roomId);
+  const ms = currentRoomData?.master_sheet;
 
   useEffect(() => {
     setAppbarTitle(currentRoomData?.name || "FSF Room Manager");
@@ -72,6 +73,7 @@ export default function RoomUserManager() {
   const handleAddNewUser = () => {
     setAddButtonLoading(true);
     const isEmail = searchInfo.includes("@");
+
     const handleSupabaseOperations = async () => {
       const resp = await supabase
         ?.from("users")
@@ -91,6 +93,21 @@ export default function RoomUserManager() {
         return;
       }
 
+      if (!ms) return;
+      // currently adding user will have newStatement
+      const currentStatement = ms.getStatement(session?.user.id || "");
+      const newStatement = currentStatement?.toJson();
+      const newUserStatement = new Statement(newStatement);
+      newUserStatement.setAmount(session?.user.id || "", "0");
+      ms.setStatement(resp.data.id, newUserStatement);
+
+      roomUsers?.forEach((u) => {
+        let tmp = ms.getStatement(u.id);
+        if (!tmp) tmp = new Statement();
+        tmp.setAmount(resp.data.id, "0");
+        ms.setStatement(u.id, tmp);
+      });
+
       supabase
         ?.from("users")
         .update({ rooms_id: [...resp.data.rooms_id, roomId] })
@@ -105,7 +122,10 @@ export default function RoomUserManager() {
 
       supabase
         ?.from("rooms")
-        .update({ users_id: [...currentRoomData.users_id, resp?.data.id] })
+        .update({
+          users_id: [...currentRoomData.users_id, resp?.data.id],
+          master_sheet: ms.toJson(),
+        })
         .eq(`id`, roomId)
         .then(({ error }) => {
           if (error) {
@@ -119,13 +139,22 @@ export default function RoomUserManager() {
       setSearchInfo("");
     };
 
-    handleSupabaseOperations();
+    handleSupabaseOperations().then(() => setAddButtonLoading(false));
   };
 
   const handleRemoveUser = (user: User) => {
     setWillBeDeleted(user.id);
     setDeleteButtonLoading(true);
+
     const handleSupabaseOperations = async () => {
+      if (!ms) return;
+      roomUsers?.forEach((u) => {
+        let tmp = ms.getStatement(u.id);
+        if (!tmp) tmp = new Statement();
+        tmp.removeEntry(user.id);
+      });
+      ms.removeStatement(user.id);
+
       const updateRoomsId = user.rooms_id?.filter((id) => id !== roomId);
       const resp = await supabase
         ?.from("users")
@@ -143,7 +172,7 @@ export default function RoomUserManager() {
       );
       const resp2 = await supabase
         ?.from("rooms")
-        .update({ users_id: updateUsersId })
+        .update({ users_id: updateUsersId, master_sheet: ms.toJson() })
         .eq("id", roomId);
       if (resp2 && resp2.error) {
         alert(resp2.error);
@@ -156,7 +185,10 @@ export default function RoomUserManager() {
       setDeleteButtonLoading(false);
     };
 
-    handleSupabaseOperations();
+    handleSupabaseOperations().then(() => {
+      setWillBeDeleted("");
+      setDeleteButtonLoading(false);
+    });
   };
 
   return (
@@ -166,32 +198,12 @@ export default function RoomUserManager() {
           Manager Room Users
         </Typography>
       </Grid>
-      <Box
-        component="form"
-        display="flex"
-        px={2}
-        width="100%"
-        justifyContent="space-between"
-        border="1px solid"
-        borderRadius="8px"
-      >
-        <Input
-          disableUnderline
-          value={searchInfo}
-          onChange={(e) => setSearchInfo(e.target.value)}
-          sx={{ width: "85%", border: "px solid red" }}
-          placeholder="Type username or email"
-        />
-        <IconButton
-          type="submit"
-          aria-label="search"
-          sx={{ width: "10%", p: 2 }}
-          disabled={addButtonLoading}
-          onClick={handleAddNewUser}
-        >
-          {addButtonLoading ? <CircularProgress /> : <PersonAdd />}
-        </IconButton>
-      </Box>
+      <AddUserInput
+        searchInfo={searchInfo}
+        setSearchInfo={setSearchInfo}
+        addButtonLoading={addButtonLoading}
+        handleAddNewUser={handleAddNewUser}
+      />
       <Box display="flex" width="100%">
         <List
           sx={{
