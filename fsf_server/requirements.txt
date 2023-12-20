@@ -1,7 +1,0 @@
-Flask
-Flask-RESTful 
-Flask-SQLAlchemy
-Flask-Migrate
-mysql-connector-python
-flask_bcrypt
-flask_jwt_extended
