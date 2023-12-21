@@ -43,7 +43,7 @@ export default function Homepage() {
 
         if (error) {
           setLoading(false);
-          alert(error.message + "e");
+          // alert(error.message + "e");
           return;
         }
 
@@ -62,7 +62,7 @@ export default function Homepage() {
           .eq("id", session?.user.id);
         if (resp.error) {
           setLoading(false);
-          alert(resp.error.message + "f");
+          // alert(resp.error.message + "f");
           return;
         }
 

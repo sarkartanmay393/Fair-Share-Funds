@@ -26,7 +26,7 @@ const TransactionCard = ({
   trnx: Transaction;
 }) => {
   const { supabase } = useSupabaseContext();
-  const { currentRoomData } = useCurrentRoomData(trnx.room_id);
+  const { currentRoomData } = useCurrentRoomData();
   const [isLoading, setIsLoading] = useState(false);
   const approveTrnx = async (trnxId: string) => {
     setIsLoading(true);
@@ -74,7 +74,8 @@ const TransactionCard = ({
     <Card
       sx={{
         // mb: "6px",
-        width: "100%",
+        width: "95%",
+        // mx: '2rem',
         height: "64px",
         display: "flex",
         justifyContent: "space-between",

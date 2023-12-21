@@ -4,14 +4,13 @@ import { SupabaseContext } from "./context.ts";
 import supabase from "../../utils/supabase/supabase.ts";
 import { type Session } from "@supabase/supabase-js";
 
+const localSession = localStorage.getItem("sb-jawvorkhuixgggewwkxn-auth-token");
+
 export default function SupabaseContextProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const localSession = localStorage.getItem(
-    "sb-jawvorkhuixgggewwkxn-auth-token"
-  );
   const [session, setSession] = useState<Session | null>(
     localSession ? JSON.parse(localSession) : null
   );

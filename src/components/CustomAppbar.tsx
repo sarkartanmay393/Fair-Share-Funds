@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
@@ -32,12 +32,8 @@ export default function CustomAppbar() {
   const [anchorElExpand, setAnchorElExpand] = useState<HTMLElement | null>(
     null
   );
-  const adminAccess = useRef<boolean>(false);
 
-  const { currentRoomData } = useCurrentRoomData(roomId);
-  adminAccess.current = currentRoomData
-    ? currentRoomData.created_by === session?.user.id
-    : false;
+  const { adminAccess } = useCurrentRoomData();
 
   const signOut = async () => {
     const resp = await supabase?.auth.signOut();
@@ -127,13 +123,25 @@ export default function CustomAppbar() {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               <MenuItem
-                disabled={pathname.includes("manage") || !adminAccess.current}
+                disabled={!adminAccess.current || pathname.includes("manage")}
                 onClick={() =>
                   !pathname.includes("manage") && navigate(`${pathname}/manage`)
                 }
               >
-                <Avatar /> Manage Users
+                {adminAccess.current ? (
+                  <>
+                    <Avatar />
+                    Manage Users{" "}
+                  </>
+                ) : (
+                  <>No Admin Access!</>
+                )}
               </MenuItem>
+              {!adminAccess.current && (
+                <MenuItem onClick={() => window.location.reload()}>
+                  Window Reload
+                </MenuItem>
+              )}
               {/* <Divider /> */}
               <MenuItem disabled onClick={() => setAnchorEl(null)}>
                 <ListItemIcon>

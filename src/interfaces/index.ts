@@ -1,5 +1,3 @@
-// import { Database } from "../utils/supabase/types";
-
 import { Action } from "easy-peasy";
 import { MasterStatement } from "@/utils/masterSheet.ts";
 
@@ -43,7 +41,9 @@ export interface GlobalStore {
   user: User | null;
   appbarTitle: string;
   rooms: Room[] | null;
+  isAdmin: boolean;
 
+  setIsAdmin: Action<GlobalStore, boolean>;
   setUser: Action<GlobalStore, User | null>;
   setAppbarTitle: Action<GlobalStore, string>;
   setRooms: Action<GlobalStore, Room[] | null>;

@@ -1,17 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import supabase from "./supabase/supabase.ts";
 import { Database } from "./supabase/types.ts";
 import { Room, Transaction } from "../interfaces/index.ts";
 import { MasterStatement } from "./masterSheet.ts";
+import { useSupabaseContext } from "@/provider/supabase/useSupabase.ts";
 
-export const useCurrentRoomData = (roomId: string) => {
+export const useCurrentRoomData = (roomID?: string) => {
+  // if (!roomId) {i f(
+
+  if (roomID) {
+    null;
+  }
+  const pathname = window.location.pathname;
+  const roomId = pathname.split("/")[2];
+  // }
+  const { session } = useSupabaseContext();
   const [currentRoomData, setCurrentRoomData] = useState<Room>();
   const [currentTransactions, setCurrentTransactions] =
     useState<Transaction[]>();
-
+  const adminAccess = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [, setError] = useState(false);
+
+  useEffect(() => {
+    if (currentRoomData) {
+      console.log(currentRoomData.created_by);
+      console.log(session?.user.id);
+      adminAccess.current = currentRoomData.created_by === session?.user.id;
+      console.log(adminAccess);
+    }
+  }, [roomId, currentRoomData]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -81,5 +100,10 @@ export const useCurrentRoomData = (roomId: string) => {
     };
   }, []);
 
-  return { isLoading, error, currentRoomData, currentTransactions };
+  return {
+    isLoading,
+    currentRoomData,
+    currentTransactions,
+    adminAccess,
+  };
 };

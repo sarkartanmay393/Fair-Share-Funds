@@ -46,7 +46,7 @@ export default function RoomUserManager() {
   const [roomUsers, setRoomUsers] = useState<User[] | undefined>();
   const [, setDeleteButtonLoading] = useState(false);
 
-  const { currentRoomData } = useCurrentRoomData(roomId);
+  const { currentRoomData } = useCurrentRoomData();
   const ms = currentRoomData?.master_sheet;
 
   useEffect(() => {
@@ -82,13 +82,13 @@ export default function RoomUserManager() {
         .single();
 
       if (!resp || resp?.error) {
-        alert(resp?.error.message);
+        resp?.error.message;
         setAddButtonLoading(false);
         return;
       }
 
       if (currentRoomData?.users_id.indexOf(resp?.data.id) !== -1) {
-        alert(`User already in the room!`);
+        // alert(`User already in the room!`);
         setAddButtonLoading(false);
         return;
       }
@@ -114,7 +114,7 @@ export default function RoomUserManager() {
         .eq("id", resp?.data.id)
         .then(({ error }) => {
           if (error) {
-            alert(error.message);
+            // alert(error.message);
             setAddButtonLoading(false);
             return;
           }
@@ -129,7 +129,7 @@ export default function RoomUserManager() {
         .eq(`id`, roomId)
         .then(({ error }) => {
           if (error) {
-            alert(error.message);
+            // alert(error.message);
             setAddButtonLoading(false);
             return;
           }
@@ -161,7 +161,7 @@ export default function RoomUserManager() {
         .update({ rooms_id: updateRoomsId })
         .eq("id", user.id);
       if (resp && resp.error) {
-        alert(resp.error);
+        // alert(resp.error);
         setWillBeDeleted("");
         setDeleteButtonLoading(false);
         return;
@@ -175,7 +175,7 @@ export default function RoomUserManager() {
         .update({ users_id: updateUsersId, master_sheet: ms.toJson() })
         .eq("id", roomId);
       if (resp2 && resp2.error) {
-        alert(resp2.error);
+        // alert(resp2.error);
         setWillBeDeleted("");
         setDeleteButtonLoading(false);
         return;
@@ -192,52 +192,54 @@ export default function RoomUserManager() {
   };
 
   return (
-    <Box sx={{ ...styles.container }}>
-      <Grid container mb={2} width="100%" justifyContent="center">
-        <Typography variant="h6" component="h2" fontWeight={600}>
-          Manager Room Users
-        </Typography>
-      </Grid>
-      <AddUserInput
-        searchInfo={searchInfo}
-        setSearchInfo={setSearchInfo}
-        addButtonLoading={addButtonLoading}
-        handleAddNewUser={handleAddNewUser}
-      />
-      <Box display="flex" width="100%">
-        <List
-          sx={{
-            width: "100%",
-          }}
-        >
-          {roomUsers?.map((user, index) => (
-            <ListItem
-              key={index}
-              secondaryAction={
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => handleRemoveUser(user)}
-                >
-                  {willBeDeleted === user.id ? (
-                    <CircularProgress />
-                  ) : (
-                    <RemoveCircleOutline />
-                  )}
-                </IconButton>
-              }
-            >
-              <ListItemAvatar>
-                <Avatar></Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                sx={{ flexGrow: 1 }}
-                primary={user.name}
-                secondary={user.email}
-              />
-            </ListItem>
-          ))}
-        </List>
+    currentRoomData?.created_by === session?.user.id && (
+      <Box sx={{ ...styles.container }}>
+        <Grid container mb={2} width="100%" justifyContent="center">
+          <Typography variant="h6" component="h2" fontWeight={600}>
+            Manager Room Users
+          </Typography>
+        </Grid>
+        <AddUserInput
+          searchInfo={searchInfo}
+          setSearchInfo={setSearchInfo}
+          addButtonLoading={addButtonLoading}
+          handleAddNewUser={handleAddNewUser}
+        />
+        <Box display="flex" width="100%">
+          <List
+            sx={{
+              width: "100%",
+            }}
+          >
+            {roomUsers?.map((user, index) => (
+              <ListItem
+                key={index}
+                secondaryAction={
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => handleRemoveUser(user)}
+                  >
+                    {willBeDeleted === user.id ? (
+                      <CircularProgress />
+                    ) : (
+                      <RemoveCircleOutline />
+                    )}
+                  </IconButton>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar></Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  sx={{ flexGrow: 1 }}
+                  primary={user.name}
+                  secondary={user.email}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Box>
-    </Box>
+    )
   );
 }

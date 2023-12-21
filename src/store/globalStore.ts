@@ -5,6 +5,7 @@ const globalStore: GlobalStore = {
   user: null,
   rooms: null,
   appbarTitle: "RoomPay",
+  isAdmin: false,
 
   setUser: action((state, payload) => {
     state.user = payload;
@@ -14,6 +15,10 @@ const globalStore: GlobalStore = {
   }),
   setRooms: action((state, payload) => {
     state.rooms = payload;
+  }),
+  setIsAdmin: action((state, payload) => {
+    state.isAdmin = payload;
+    // console.log(payload)
   }),
 };
 

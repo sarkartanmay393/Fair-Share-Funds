@@ -13,13 +13,12 @@ import RoomStatement from "../components/Room/RoomStatement.tsx";
 export default function RoomPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // const trnxContainerRef = useRef<HTMLDivElement | null>(null);
   const { supabase, session } = useSupabaseContext();
   const { setAppbarTitle } = useStoreActions((actions) => actions);
   const [roomUsers, setRoomUsers] =
     useState<Database["public"]["Tables"]["users"]["Row"][]>();
 
-  const { currentRoomData } = useCurrentRoomData(id || "");
+  const { currentRoomData } = useCurrentRoomData();
 
   const fetch = async () => {
     try {
@@ -45,13 +44,11 @@ export default function RoomPage() {
     if (currentRoomData) {
       setAppbarTitle(currentRoomData.name || "Room ~");
     }
-
     fetch();
     return () => {
       setAppbarTitle("Roompay");
     };
   }, [currentRoomData]);
-
 
   return (
     <Box
