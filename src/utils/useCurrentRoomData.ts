@@ -4,18 +4,15 @@ import supabase from "./supabase/supabase.ts";
 import { Database } from "./supabase/types.ts";
 import { Room, Transaction } from "../interfaces/index.ts";
 import { MasterStatement } from "./masterSheet.ts";
-import { useSupabaseContext } from "@/provider/supabase/useSupabase.ts";
+import { useStoreState } from "@/store/typedHooks.ts";
 
 export const useCurrentRoomData = (roomID?: string) => {
-  // if (!roomId) {i f(
-
   if (roomID) {
     null;
   }
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
-  // }
-  const { session } = useSupabaseContext();
+  const { user } = useStoreState((state) => state);
   const [currentRoomData, setCurrentRoomData] = useState<Room>();
   const [currentTransactions, setCurrentTransactions] =
     useState<Transaction[]>();
@@ -25,10 +22,10 @@ export const useCurrentRoomData = (roomID?: string) => {
 
   useEffect(() => {
     if (currentRoomData) {
-      console.log(currentRoomData.created_by);
-      console.log(session?.user.id);
-      adminAccess.current = currentRoomData.created_by === session?.user.id;
-      console.log(adminAccess);
+      // console.log(currentRoomData.created_by);
+      // console.log(user?.id);
+      adminAccess.current = currentRoomData.created_by === user?.id;
+      // console.log(adminAccess);
     }
   }, [roomId, currentRoomData]);
 

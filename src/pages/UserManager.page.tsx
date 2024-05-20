@@ -12,14 +12,13 @@ import {
 } from "@mui/material";
 
 import { useState } from "react";
-import { User } from "../interfaces/index.ts";
-import { useStoreActions } from "../store/typedHooks.ts";
-import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import { Room, UserData } from "../interfaces/index.ts";
+import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 import { useEffect } from "react";
-import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
 import { RemoveCircleOutline } from "@mui/icons-material";
 import AddUserInput from "@/components/Manage/AddUserInput.tsx";
-import { Statement } from "@/utils/masterSheet.ts";
+import { MasterStatement, Statement } from "@/utils/masterSheet.ts";
+import supabase from "@/utils/supabase/supabase.ts";
 
 const styles = {
   container: {
@@ -37,25 +36,60 @@ export default function RoomUserManager() {
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
 
-  const { supabase, session } = useSupabaseContext();
+  const { user } = useStoreState((state) => state);
   const { setAppbarTitle } = useStoreActions((actions) => actions);
 
   const [willBeDeleted, setWillBeDeleted] = useState("");
   const [searchInfo, setSearchInfo] = useState("");
   const [addButtonLoading, setAddButtonLoading] = useState(false);
-  const [roomUsers, setRoomUsers] = useState<User[] | undefined>();
+  const [roomUsers, setRoomUsers] = useState<UserData[]>([]);
   const [, setDeleteButtonLoading] = useState(false);
 
-  const { currentRoomData } = useCurrentRoomData();
-  const ms = currentRoomData?.master_sheet;
+  const [loading, setLoading] = useState(false);
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
   useEffect(() => {
-    setAppbarTitle(currentRoomData?.name || "FSF Room Manager");
+    const fetchCurrentRoom = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("rooms")
+          .select()
+          .eq("id", roomId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const cRoom: Room = {
+          created_by: data.created_by,
+          id: data.id,
+          last_updated: data.last_updated,
+          master_sheet: new MasterStatement(data.master_sheet),
+          name: data.name,
+          transactions_id: data.tratransactions_id,
+          users_id: data.users_id,
+        };
+
+        setCurrentRoom(cRoom);
+        setLoading(false);
+      } catch (e) {
+        console.log(e);
+        setLoading(false);
+      }
+    };
+
+    fetchCurrentRoom();
+  }, [roomId]);
+
+  useEffect(() => {
+    setAppbarTitle(currentRoom?.name || "FSF Room Manager");
     const getUserDetails = async () => {
       const resp = await supabase
-        ?.from("users")
+        .from("users")
         .select(`*`)
-        .in("id", currentRoomData?.users_id || []);
+        .in("id", currentRoom?.users_id || []);
 
       if (resp && resp.error) {
         return;
@@ -68,7 +102,7 @@ export default function RoomUserManager() {
     return () => {
       setAppbarTitle("Fair Share Funds");
     };
-  }, [currentRoomData]);
+  }, [currentRoom]);
 
   const handleAddNewUser = () => {
     setAddButtonLoading(true);
@@ -87,7 +121,7 @@ export default function RoomUserManager() {
         return;
       }
 
-      if (currentRoomData?.users_id.indexOf(resp?.data.id) !== -1) {
+      if (currentRoom?.users_id.indexOf(resp?.data.id) !== -1) {
         // alert(`User already in the room!`);
         setAddButtonLoading(false);
         return;
@@ -95,10 +129,10 @@ export default function RoomUserManager() {
 
       if (!ms) return;
       // currently adding user will have newStatement
-      const currentStatement = ms.getStatement(session?.user.id || "");
+      const currentStatement = ms.getStatement(user?.id || "");
       const newStatement = currentStatement?.toJson();
       const newUserStatement = new Statement(newStatement);
-      newUserStatement.setAmount(session?.user.id || "", "0");
+      newUserStatement.setAmount(user?.id || "", "0");
       ms.setStatement(resp.data.id, newUserStatement);
 
       roomUsers?.forEach((u) => {
@@ -123,7 +157,7 @@ export default function RoomUserManager() {
       supabase
         ?.from("rooms")
         .update({
-          users_id: [...currentRoomData.users_id, resp?.data.id],
+          users_id: [...currentRoom.users_id, resp?.data.id],
           master_sheet: ms.toJson(),
         })
         .eq(`id`, roomId)
@@ -142,7 +176,7 @@ export default function RoomUserManager() {
     handleSupabaseOperations().then(() => setAddButtonLoading(false));
   };
 
-  const handleRemoveUser = (user: User) => {
+  const handleRemoveUser = (user: UserData) => {
     setWillBeDeleted(user.id);
     setDeleteButtonLoading(true);
 
@@ -167,7 +201,7 @@ export default function RoomUserManager() {
         return;
       }
 
-      const updateUsersId = currentRoomData?.users_id.filter(
+      const updateUsersId = currentRoom?.users_id.filter(
         (id) => id !== user.id
       );
       const resp2 = await supabase
@@ -191,55 +225,79 @@ export default function RoomUserManager() {
     });
   };
 
+  if (currentRoom?.created_by !== user?.id) {
+    window.location.pathname = `/room/${currentRoom?.id}`;
+    return;
+  }
+
   return (
-    currentRoomData?.created_by === session?.user.id && (
-      <Box sx={{ ...styles.container }}>
-        <Grid container mb={2} width="100%" justifyContent="center">
-          <Typography variant="h6" component="h2" fontWeight={600}>
-            Manager Room Users
-          </Typography>
-        </Grid>
-        <AddUserInput
-          searchInfo={searchInfo}
-          setSearchInfo={setSearchInfo}
-          addButtonLoading={addButtonLoading}
-          handleAddNewUser={handleAddNewUser}
-        />
-        <Box display="flex" width="100%">
-          <List
-            sx={{
-              width: "100%",
-            }}
-          >
-            {roomUsers?.map((user, index) => (
-              <ListItem
-                key={index}
-                secondaryAction={
-                  <IconButton
-                    aria-label="delete"
-                    onClick={() => handleRemoveUser(user)}
-                  >
-                    {willBeDeleted === user.id ? (
-                      <CircularProgress />
-                    ) : (
-                      <RemoveCircleOutline />
-                    )}
-                  </IconButton>
-                }
-              >
-                <ListItemAvatar>
-                  <Avatar></Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  sx={{ flexGrow: 1 }}
-                  primary={user.name}
-                  secondary={user.email}
-                />
-              </ListItem>
-            ))}
-          </List>
+    <Box sx={{ ...styles.container }}>
+      <Grid container mb={2} width="100%" justifyContent="center">
+        <Typography variant="h6" component="h2" fontWeight={600}>
+          Manager Room Users
+        </Typography>
+      </Grid>
+      {loading ? (
+        <Box
+          width="100%"
+          height="100%"
+          display="flex"
+          justifyContent="center"
+          marginTop={8}
+        >
+          <CircularProgress />
         </Box>
-      </Box>
-    )
+      ) : (
+        <>
+          {" "}
+          <AddUserInput
+            searchInfo={searchInfo}
+            setSearchInfo={setSearchInfo}
+            addButtonLoading={addButtonLoading}
+            handleAddNewUser={handleAddNewUser}
+          />
+          <Box display="flex" width="100%">
+            <List
+              sx={{
+                width: "100%",
+              }}
+            >
+              {roomUsers.length > 0 ? (
+                roomUsers.map((user, index) => (
+                  <ListItem
+                    key={index}
+                    secondaryAction={
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => handleRemoveUser(user)}
+                      >
+                        {willBeDeleted === user.id ? (
+                          <CircularProgress />
+                        ) : (
+                          <RemoveCircleOutline />
+                        )}
+                      </IconButton>
+                    }
+                  >
+                    <ListItemAvatar>
+                      <Avatar></Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      sx={{ flexGrow: 1 }}
+                      primary={user.name}
+                      secondary={user.email}
+                    />
+                  </ListItem>
+                ))
+              ) : (
+                <Typography sx={{ color: "GrayText" }}>
+                  No other member found 🤦🏽‍♂️
+                </Typography>
+              )}
+            </List>
+          </Box>
+        </>
+      )}
+    </Box>
   );
 }

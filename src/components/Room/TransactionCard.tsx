@@ -7,68 +7,80 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import { Transaction, User } from "../../interfaces/index.ts";
+import { Transaction, UserData } from "../../interfaces/index.ts";
 
 import { Done, DoneAll, Close } from "@mui/icons-material";
 
-import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
-import { useCurrentRoomData } from "@/utils/useCurrentRoomData.ts";
-import { Statement } from "@/utils/masterSheet.ts";
+import { MasterStatement, Statement } from "@/utils/masterSheet.ts";
+import supabase from "@/utils/supabase/supabase.ts";
+
+interface Props {
+  roomId: string;
+  masterSheet: MasterStatement;
+  fromUserData?: UserData;
+  toUserDataSelf?: boolean;
+  roomUsers: UserData[];
+  transaction: Transaction;
+}
 
 const TransactionCard = ({
-  toUserSelf,
+  roomId,
+  masterSheet,
+  toUserDataSelf,
   roomUsers,
-  trnx,
-}: {
-  fromUser?: User;
-  toUserSelf?: boolean;
-  roomUsers?: User[];
-  trnx: Transaction;
-}) => {
-  const { supabase } = useSupabaseContext();
-  const { currentRoomData } = useCurrentRoomData();
+  transaction,
+}: Props) => {
   const [isLoading, setIsLoading] = useState(false);
-  const approveTrnx = async (trnxId: string) => {
-    setIsLoading(true);
 
+  const approveTrnx = async (transactionId: string) => {
+    setIsLoading(true);
     const resp = await supabase
-      ?.from("transactions")
+      .from("transactions")
       .update({ approved: true })
-      .eq("id", trnxId);
+      .eq("id", transactionId);
     if (resp?.error) {
       alert("Approval failed");
       setIsLoading(false);
       return;
     }
 
-    const ms = currentRoomData?.master_sheet;
-    const fromUserStatement =
-      ms?.getStatement(trnx?.from_user) || new Statement();
-    const toUserStatement = ms?.getStatement(trnx.to_user) || new Statement();
+    setTimeout(async () => {
+      const ms = masterSheet;
+      const fromUserDataStatement =
+        ms?.getStatement(transaction?.from_user) || new Statement();
+      const toUserDataStatement =
+        ms?.getStatement(transaction.to_user) || new Statement();
 
-    const fus_tua =
-      Number(fromUserStatement?.getAmount(trnx.to_user) || 0) + trnx.amount;
-    fromUserStatement?.setAmount(trnx.to_user, fus_tua + "");
-    const tus_fua =
-      Number(toUserStatement?.getAmount(trnx.from_user) || 0) + trnx.amount;
-    toUserStatement?.setAmount(trnx.from_user, tus_fua + "");
+      const fus_tua =
+        Number(fromUserDataStatement?.getAmount(transaction.to_user) || 0) +
+        transaction.amount;
+      fromUserDataStatement?.setAmount(transaction.to_user, fus_tua + "");
+      const tus_fua =
+        Number(toUserDataStatement?.getAmount(transaction.from_user) || 0) +
+        transaction.amount;
+      toUserDataStatement?.setAmount(transaction.from_user, tus_fua + "");
 
-    const updateMasterSheet = await supabase
-      ?.from("rooms")
-      .update({ master_sheet: ms?.toJson() })
-      .eq("id", currentRoomData?.id);
+      const updateMasterSheet = await supabase
+        ?.from("rooms")
+        .update({ master_sheet: ms?.toJson() })
+        .eq("id", roomId);
 
-    if (updateMasterSheet?.error) {
-      alert("Failed master sheet update");
+      if (updateMasterSheet?.error) {
+        alert("Failed master sheet update");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
+    }, 200);
   };
 
-  const trnxBy = roomUsers?.find((u) => u.id === trnx.from_user)?.name;
-  const trnxTo = roomUsers?.find((u) => u.id === trnx.to_user)?.name;
+  const transactionBy = roomUsers.find(
+    (u) => u.id === transaction.from_user
+  )?.name;
+  const transactionTo = roomUsers.find(
+    (u) => u.id === transaction.to_user
+  )?.name;
 
   return (
     <Card
@@ -86,7 +98,7 @@ const TransactionCard = ({
       }}
     >
       <Box sx={{ display: "flex", gap: "18px" }} border="px solid red">
-        <Avatar>{(trnxBy ?? "Noname").trim().charAt(0)}</Avatar>
+        <Avatar>{(transactionBy ?? "Noname").trim().charAt(0)}</Avatar>
         <Box
           sx={{
             display: "flex",
@@ -94,11 +106,11 @@ const TransactionCard = ({
           }}
         >
           <Typography sx={{ fontSize: "15px" }}>
-            {trnxBy ?? "Noname"}
+            {transactionBy ?? "Noname"}
           </Typography>
           <Typography sx={{ fontSize: "12px" }}>
-            {trnx.type === "Pay" ? "Paid" : "Borrowed"}{" "}
-            <span style={{ fontWeight: 600 }}>{trnxTo ?? "Noname"}</span>
+            {transaction.type === "Pay" ? "Paid" : "Borrowed"}{" "}
+            <span style={{ fontWeight: 600 }}>{transactionTo ?? "Noname"}</span>
           </Typography>
         </Box>
       </Box>
@@ -106,22 +118,24 @@ const TransactionCard = ({
       <Box sx={{ display: "flex", alignItems: "center", columnGap: 2 }}>
         <Typography
           sx={{ fontSize: "15px", fontWeight: "600" }}
-          color={trnx.type === "Pay" ? "lightgreen" : "#FF6966"}
+          color={transaction.type === "Pay" ? "lightgreen" : "#FF6966"}
         >
-          Rs. {trnx.amount}
+          Rs. {transaction.amount}
         </Typography>
-        {trnx.approved && <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />}
-        {toUserSelf && !trnx.approved && (
+        {transaction.approved && (
+          <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />
+        )}
+        {toUserDataSelf && !transaction.approved && (
           <Button
             disableRipple
-            disabled={trnx.approved || false}
+            disabled={transaction.approved || false}
             sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               bgcolor: "green",
             }}
-            onClick={() => approveTrnx(trnx.id)}
+            onClick={() => approveTrnx(transaction.id)}
           >
             {isLoading ? (
               <CircularProgress />
@@ -130,7 +144,7 @@ const TransactionCard = ({
             )}
           </Button>
         )}
-        {!toUserSelf && !trnx.approved && (
+        {!toUserDataSelf && !transaction.approved && (
           <Close sx={{ fontSize: "18px", opacity: 0.6 }} />
         )}
       </Box>

@@ -6,8 +6,9 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { LoginBox } from "../components/Auth/LoginBox.tsx";
 import { SignupBox } from "../components/Auth/SignupBox.tsx";
-import { User } from "../interfaces/index.ts";
-import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import { useStoreActions, useStoreState } from "@/store/typedHooks.ts";
+import supabase from "@/utils/supabase/supabase.ts";
+import { UserData } from "@/interfaces/index.ts";
 
 const style = {
   position: "absolute",
@@ -30,7 +31,8 @@ export const AuthPage = () => {
   const [alignment, setAlignment] = React.useState("login");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState({ message: "", spec: "" });
-  const { supabase, session } = useSupabaseContext();
+  const { user } = useStoreState((state) => state);
+  const { setUser } = useStoreActions((actions) => actions);
 
   const navigate = useNavigate();
 
@@ -49,29 +51,28 @@ export const AuthPage = () => {
       password: Yup.string().min(8).max(24).required("Required"),
     }),
     onSubmit: (values, { setSubmitting }) => {
-      setTimeout(() => {
-        setError("");
-        setSuccess({ spec: "", message: "" });
-
-        const loginUser = async () => {
-          try {
-            const resp = await supabase?.auth.signInWithPassword({
-              ...values,
-            });
-            if (resp && resp.error) {
-              setError(resp.error.message);
-              return;
-            }
-
-            setSuccess({ spec: "login", message: "Successfully logged in!" });
-          } catch (e) {
-            setError(String(e));
+      setError("");
+      setSuccess({ spec: "", message: "" });
+      const loginUser = async () => {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            ...values,
+          });
+          if (error) {
+            setError(error.message);
+            return;
           }
-        };
 
-        loginUser();
-        setSubmitting(false);
-      }, 400);
+          setUser(data.user);
+          setSuccess({ spec: "login", message: "Successfully logged in!" });
+          setSubmitting(false);
+        } catch (e) {
+          setError(String(e));
+          setSubmitting(false);
+        }
+      };
+
+      loginUser();
     },
   });
 
@@ -83,55 +84,72 @@ export const AuthPage = () => {
       name: Yup.string().min(2).max(16).required("Required"),
     }),
     onSubmit: (values, { setSubmitting }) => {
-      setTimeout(() => {
-        setError("");
-        setSuccess(() => ({ spec: "", message: "" }));
+      setError("");
+      setSuccess(() => ({ spec: "", message: "" }));
 
-        const signUser = async () => {
-          try {
-            const resp = await supabase?.auth.signUp({
-              email: values.email,
-              password: values.password,
-            });
-            if (resp && resp.error) {
-              setError(resp.error.message);
-              return;
-            }
-            setSuccess(() => ({
-              spec: "signup",
-              message: "Successfully created an account!",
-            }));
-
-            const newUser: User = {
-              name: values.name,
-              email: values.email,
-              id: resp?.data.user?.id as string,
-              username: values.email.split("@")[0],
-              rooms_id: null,
-            };
-
-            const { error } = await supabase!.from("users").insert(newUser);
-            if (error) {
-              setError(error.message);
-              return;
-            }
-
-            const loginResp = await supabase?.auth.signInWithPassword({
-              email: values.email,
-              password: values.password,
-            });
-            if (loginResp && loginResp.error) {
-              setError(loginResp.error.message);
-              return;
-            }
-          } catch (e) {
-            setError(String(e));
+      const signUser = async () => {
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+          });
+          if (error) {
+            setError(error.message);
+            throw error;
           }
-        };
+          setSuccess(() => ({
+            spec: "signup",
+            message: "Successfully created an account!",
+          }));
 
-        signUser();
-        setSubmitting(false);
-      }, 400);
+          if (!data.user) {
+            setError("There's an issue creating new user.");
+            throw new Error("There's an issue creating new user.");
+          }
+
+          const newUser: UserData = {
+            name: values.name,
+            email: values.email,
+            id: data.user.id,
+            username: values.email.split("@")[0],
+            rooms_id: null,
+          };
+
+          const { error: error2 } = await supabase
+            .from("users")
+            .insert(newUser);
+          if (error2) {
+            setError(error2.message);
+            throw error;
+          }
+
+          const { data: data2, error: error3 } =
+            await supabase.auth.signInWithPassword({
+              email: values.email,
+              password: values.password,
+            });
+
+          if (error3) {
+            setError(error3.message);
+            setAlignment("login");
+            throw error;
+          }
+
+          if (!data2.user) {
+            setError("There's an issue login to the new user.");
+            setAlignment("login");
+            throw new Error("There's an issue login to the new user.");
+          }
+
+          setUser(data2.user);
+          setSubmitting(false);
+        } catch (e) {
+          // setError(()String(e));
+          setSubmitting(false);
+        }
+      };
+
+      signUser();
     },
   });
 
@@ -140,12 +158,12 @@ export const AuthPage = () => {
       navigate("/");
     }
 
-    console.log(typeof loginFormik);
+    // console.log(typeof loginFormik);
   }, [success]);
 
   return (
     <React.Fragment>
-      {session && <Navigate to="/" />}
+      {user && <Navigate to="/" />}
       <Box width={{ xs: "90%", sm: 400 }} sx={{ ...style }}>
         <ToggleButtonGroup
           color="primary"

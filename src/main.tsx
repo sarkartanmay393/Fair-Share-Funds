@@ -9,7 +9,6 @@ import App from "./App.tsx";
 import Theme from "./theme/theme.ts";
 import globalStore from "./store/globalStore.ts";
 import reportWebVitals from "./reportWebVitals.ts";
-import SupabaseContextProvider from "./provider/supabase/provider.tsx";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -23,11 +22,9 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
-      <SupabaseContextProvider>
-        <StoreProvider store={store}>
-          <App />
-        </StoreProvider>
-      </SupabaseContextProvider>
+      <StoreProvider store={store}>
+        <App />
+      </StoreProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

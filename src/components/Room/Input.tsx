@@ -1,25 +1,75 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 import { SxProps, Theme } from "@mui/material/styles";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import { Avatar, Box, IconButton, TextField, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Send } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Database } from "../../utils/supabase/types.ts";
-import { useSupabaseContext } from "../../provider/supabase/useSupabase.ts";
-import { Room } from "@/interfaces/index.ts";
+import { Room, Transaction, UserData } from "@/interfaces/index.ts";
+import { useStoreState } from "@/store/typedHooks.ts";
+import supabase from "@/utils/supabase/supabase.ts";
 
 interface InputProps {
   styles?: SxProps<Theme>;
   usersId?: string[];
-  roomUsers?: Database["public"]["Tables"]["users"]["Row"][];
-  roomData?: Room;
+  roomUsers: UserData[];
+  roomData: Room;
 }
 
 export default function InputBar({ roomData, roomUsers }: InputProps) {
-  const { supabase, session } = useSupabaseContext();
+  const { user } = useStoreState((state) => state);
   const [, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  const sendTransaction = async (
+    newTransaction: Transaction,
+    resetForm: any
+  ) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert(newTransaction)
+        .select()
+        .single();
+
+      if (error) {
+        // setError(resp.error.message);
+        throw error;
+      }
+
+      const updatedTransactionIds = [
+        ...(roomData?.transactions_id ?? []),
+        data.id,
+      ];
+
+      const updateRoomResp = await supabase
+        .from("rooms")
+        .update({
+          transactions_id: updatedTransactionIds,
+        })
+        .eq("id", roomData.id);
+
+      if (updateRoomResp && updateRoomResp.error) {
+        throw updateRoomResp.error;
+      }
+
+      setLoading(false);
+      resetForm();
+    } catch (e) {
+      setLoading(false);
+      setError(String(e));
+    }
+  };
 
   const useTransactionInputFormik = useFormik({
     initialValues: { toUser: "self", transactionType: "Pay", amount: "" },
@@ -31,54 +81,23 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
     onSubmit: (values, { setSubmitting, resetForm }) => {
       setTimeout(() => {
         setError("");
-        if (values.toUser === session?.user.id) {
+        if (values.toUser === user?.id) {
           resetForm();
           return;
         }
         const newTransaction = {
           amount: Number(values.amount),
-          from_user: session?.user.id,
+          from_user: user?.id,
           room_id: roomData?.id,
           to_user: values.toUser,
           type: values.transactionType,
-        } as Database["public"]["Tables"]["transactions"]["Row"];
-        if (values.transactionType === "Due") {
-          newTransaction.amount = (-newTransaction.amount);
+        } as Transaction;
+
+        if (newTransaction.type === "Due") {
+          newTransaction.amount = -newTransaction.amount;
         }
 
-        const sendTransaction = async () => {
-          try {
-            const resp = await supabase
-              ?.from("transactions")
-              .insert(newTransaction)
-              .select()
-              .single();
-            if (resp && resp.error) {
-              setError(resp.error.message);
-              return;
-            }
-
-            const updateRoomResp = await supabase
-              ?.from("rooms")
-              .update({
-                transactions_id: [
-                  ...(roomData?.transactions_id || []),
-                  resp?.data.id,
-                ],
-              })
-              .eq("id", roomData?.id);
-            if (updateRoomResp && updateRoomResp.error) {
-              setError(updateRoomResp.error.message);
-              return;
-            }
-
-            resetForm();
-          } catch (e) {
-            setError(String(e));
-          }
-        };
-
-        sendTransaction();
+        sendTransaction(newTransaction, resetForm);
         setSubmitting(false);
       }, 200);
     },
@@ -118,15 +137,15 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           {roomUsers &&
             roomUsers.map(
               (ru) =>
-                ru.id !== session?.user.id && (
+                ru.id !== user?.id && (
                   <MenuItem
                     sx={{ border: 0 }}
                     key={ru.id.slice(0, 3)}
-                    value={ru.id === session?.user.id ? "self" : ru.id!}
+                    value={ru.id === user?.id ? "self" : ru.id!}
                   >
                     <Avatar>
                       <Typography color="white">
-                        {ru.id === session?.user.id
+                        {ru.id === user?.id
                           ? "-"
                           : ru.name &&
                             `${ru.name.split(" ").at(0)?.at(0)}${ru.name
@@ -183,7 +202,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
           type="submit"
           sx={{}}
         >
-          <Send sx={{ fontSize: "22px" }} />
+          {loading ? <CircularProgress /> : <Send sx={{ fontSize: "22px" }} />}
         </IconButton>
       </Box>
     </Box>

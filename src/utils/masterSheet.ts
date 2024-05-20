@@ -51,8 +51,12 @@ export class MasterStatement {
     // console.log(masterRecord);
     return masterRecord;
   }
-  getStatement(key: string): Statement | undefined {
-    return this.perUserStatements.get(key);
+  getStatement(key: string): Statement {
+    const userStatement = this.perUserStatements.get(key);
+    if (!userStatement) {
+      throw new Error("No statement found with key");
+    }
+    return userStatement;
   }
   setStatement(key: string, value: Statement): void {
     this.perUserStatements.set(key, value);

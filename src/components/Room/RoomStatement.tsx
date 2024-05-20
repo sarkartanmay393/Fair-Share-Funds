@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -9,22 +10,16 @@ import {
 } from "@mui/material";
 import { KeyboardArrowDown } from "@mui/icons-material";
 import { Statement } from "@/utils/masterSheet";
-import { useSupabaseContext } from "@/provider/supabase/useSupabase";
-import React from "react";
+import { useStoreState } from "@/store/typedHooks";
+import { UserData } from "@/interfaces";
 
 interface RoomStatementProps {
   statement?: Statement;
-  roomUsers?: {
-    email: string;
-    id: string;
-    name: string;
-    rooms_id: string[] | null;
-    username: string;
-  }[];
+  roomUsers: UserData[];
 }
 
 const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
-  const { session } = useSupabaseContext();
+  const { user } = useStoreState((state) => state);
 
   return (
     <Card
@@ -47,57 +42,67 @@ const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
           <Typography>Statement</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          {!(roomUsers?.length || 0 > 1) && (
-          <Typography textAlign="center" variant="body1" sx={{ opacity: 0.7 }}>
-            No users in the room
-          </Typography>
-          )}
-          {roomUsers &&
-            roomUsers.map((u, index) => {
-              const name = u.name;
-              const amount = Number(statement?.getAmount(u.id) || 0);
-              if (u.id === session?.user.id) {
-                return <React.Fragment key={index}></React.Fragment>;
-              }
-              return (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                  }}
-                >
+          {statement ? (
+            roomUsers.length > 0 ? (
+              roomUsers.map((u, index) => {
+                const name = u.name;
+                const amount = Number(statement?.getAmount(u.id) || 0);
+                if (u.id === user?.id) {
+                  return <React.Fragment key={index}></React.Fragment>;
+                }
+                return (
                   <Box
+                    key={index}
                     sx={{
-                      width: "100%",
                       display: "flex",
-                      justifyContent: "space-between",
-                      paddingX: "15px",
-                      paddingY: "10px",
-                      border: "px solid red",
-                      borderRadius: "8px",
+                      flexDirection: "column",
+                      gap: "10px",
                     }}
                   >
-                    <Box sx={{ display: "flex", gap: "20px" }}>
-                      <Box sx={{}}>
-                        <Avatar>{name.charAt(0).toUpperCase()}</Avatar>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        paddingX: "15px",
+                        paddingY: "10px",
+                        border: "px solid red",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", gap: "20px" }}>
+                        <Box sx={{}}>
+                          <Avatar>{name.charAt(0).toUpperCase()}</Avatar>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography sx={{ fontSize: "15px" }}>
+                            {name}
+                          </Typography>
+                        </Box>
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography sx={{ fontSize: "15px" }}>
-                          {name}
+                        <Typography
+                          sx={{ fontSize: "15px", fontWeight: "600" }}
+                        >
+                          Rs. {amount}
                         </Typography>
                       </Box>
                     </Box>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
-                        Rs. {amount}
-                      </Typography>
-                    </Box>
                   </Box>
-                </Box>
-              );
-            })}
+                );
+              })
+            ) : (
+              <Typography
+                textAlign="center"
+                variant="body1"
+                sx={{ opacity: 0.7 }}
+              >
+                No users in the room
+              </Typography>
+            )
+          ) : (
+            <Typography>No room statement found</Typography>
+          )}
         </AccordionDetails>
       </Accordion>
     </Card>

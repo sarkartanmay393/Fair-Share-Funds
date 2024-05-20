@@ -1,16 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
+import { Database } from "./types";
 
-export const supabaseUrl ="https://jawvorkhuixgggewwkxn.supabase.co";
-export const supabaseKey ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imphd3ZvcmtodWl4Z2dnZXd3a3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDE3MDU1OTYsImV4cCI6MjAxNzI4MTU5Nn0.x_xYA0Eh47EGdjKg60YDjsPmYwdkId42LI1N4uNct9k";
-
-const createSupaClient = () =>
-  createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  });
-const supabase = createSupaClient();
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
 
 export default supabase;

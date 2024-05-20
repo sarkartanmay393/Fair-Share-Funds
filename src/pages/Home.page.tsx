@@ -1,79 +1,78 @@
 import { useState } from "react";
+
 import { Box, CircularProgress, Fab, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-
-import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
-import { Rooms } from "../components/Home/Rooms.tsx";
-
 import { Add } from "@mui/icons-material";
-import { Database } from "@/utils/supabase/types.js";
+
+import { Rooms } from "@/components/Home/Rooms.tsx";
 import RoomCreationDialog from "@/components/Home/RoomCreationDialog.tsx";
-import { useCurrentUser } from "@/utils/useCurrentUser.ts";
+import supabase from "@/utils/supabase/supabase.ts";
 import generateRandomName from "@/utils/generateRandomName.ts";
+import { useStoreState } from "@/store/typedHooks.ts";
 
 export default function Homepage() {
-  const navigate = useNavigate();
-  const { supabase, session } = useSupabaseContext();
-  const { cUser } = useCurrentUser();
-  const [showRoomCreationModal, setShowRoomCreationModal] = useState(false);
+  // const navigate = useNavigate();
+  const { user, userData } = useStoreState((state) => state);
 
   const [loading, setLoading] = useState(false);
+  const [showRoomCreationModal, setShowRoomCreationModal] = useState(false);
 
   // Creates a new rooms in db and add the room id to current user
-  const handleNewRoom = () => {
-    if (!supabase) {
-      return;
-    }
-    const triggerNewRoomCreation = async () => {
-      setLoading(true);
-      try {
-        const newroom = {
-          users_id: [`${session?.user.id}`],
-          name: generateRandomName(),
-          created_by: session?.user.id,
-          master_sheet: JSON.parse(`{"${session?.user.id}":null}`),
-        } as Database["public"]["Tables"]["rooms"]["Row"];
-
-        // console.log(newroom);
-        const { data, error } = await supabase
-          .from("rooms")
-          .insert(newroom)
-          .select()
-          .single();
-
-        if (error) {
-          setLoading(false);
-          // alert(error.message + "e");
-          return;
-        }
-
-        let currentRoomsOfUser = cUser?.rooms_id;
-        if (currentRoomsOfUser) {
-          currentRoomsOfUser.push(data.id);
-        } else {
-          currentRoomsOfUser = [data.id];
-        }
-
-        const resp = await supabase
-          .from("users")
-          .update({
-            rooms_id: currentRoomsOfUser,
-          })
-          .eq("id", session?.user.id);
-        if (resp.error) {
-          setLoading(false);
-          // alert(resp.error.message + "f");
-          return;
-        }
-
-        navigate(`/room/${data.id}`);
-      } catch (e) {
-        null;
+  const handleNewRoom = async () => {
+    setLoading(true);
+    try {
+      if (!user) {
+        throw new Error("Not authenticated user found!");
       }
-      setLoading(false);
-    };
 
-    triggerNewRoomCreation();
+      const newroom = {
+        users_id: [user?.id],
+        name: generateRandomName(),
+        created_by: user?.id,
+        master_sheet: { [user?.id]: null },
+      };
+
+      // console.log(newroom);
+      const { data, error } = await supabase
+        .from("rooms")
+        .insert(newroom)
+        .select()
+        .single();
+
+      if (error) {
+        // alert(error.message + "e");
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error("Unknow issue creating a new room!");
+      }
+
+      let roomsOfCurrentUser = userData?.rooms_id;
+      if (roomsOfCurrentUser) {
+        roomsOfCurrentUser.push(data.id);
+      } else {
+        roomsOfCurrentUser = [data.id];
+      }
+
+      const { error: errorUserUpdate } = await supabase
+        .from("users")
+        .update({
+          rooms_id: roomsOfCurrentUser,
+        })
+        .eq("id", user.id);
+      if (errorUserUpdate) {
+        // alert(resp.error.message + "f");
+        throw errorUserUpdate;
+      }
+
+      
+      setLoading(false);
+      // navigate(`/room/${data.id}`);
+    } catch (e) {
+      setLoading(false);
+      console.log(e);
+      null;
+    }
   };
 
   return (
@@ -107,7 +106,7 @@ export default function Homepage() {
             fontWeight={600}
             fontSize={{ xs: 26, sm: 32 }}
           >
-            {cUser?.name}
+            {userData?.name}
           </Typography>
         </Typography>
       </Box>

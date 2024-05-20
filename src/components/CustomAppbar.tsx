@@ -10,15 +10,16 @@ import {
   Avatar,
   Button,
   ListItemIcon,
+  CircularProgress,
 } from "@mui/material";
 import { ExpandMore, AccountCircle, Settings } from "@mui/icons-material";
 
-import { useStoreState } from "../store/typedHooks.ts";
-import { useSupabaseContext } from "../provider/supabase/useSupabase.ts";
+import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
 
 import Logo from "../assets/logo.png";
 import BackIcon from "../assets/icons8-back-36.png";
+import supabase from "@/utils/supabase/supabase.ts";
 
 export default function CustomAppbar() {
   const pathname = window.location.pathname;
@@ -26,19 +27,28 @@ export default function CustomAppbar() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, supabase } = useSupabaseContext();
-  const { appbarTitle } = useStoreState((state) => state);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [anchorElExpand, setAnchorElExpand] = useState<HTMLElement | null>(
     null
   );
 
+  const { appbarTitle, user } = useStoreState((state) => state);
+  const { resetStore } = useStoreActions((action) => action);
+
+  const [logOutLoading, setLogOutLoading] = useState(false);
+
   const { adminAccess } = useCurrentRoomData();
 
   const signOut = async () => {
-    const resp = await supabase?.auth.signOut();
-    if (resp && resp.error) {
+    setLogOutLoading(true);
+    try {
+      await supabase.auth.signOut();
+      resetStore();
+      setLogOutLoading(false);
       navigate("/auth");
+    } catch (error) {
+      console.log(error);
+      setLogOutLoading(false);
     }
   };
 
@@ -153,7 +163,7 @@ export default function CustomAppbar() {
           </div>
         )}
 
-        {session ? (
+        {user ? (
           <div>
             <IconButton
               size="large"
@@ -183,7 +193,9 @@ export default function CustomAppbar() {
               onClose={() => setAnchorEl(null)}
             >
               <MenuItem disabled>Profile</MenuItem>
-              <MenuItem onClick={signOut}>Log Out</MenuItem>
+              <MenuItem disabled={logOutLoading} onClick={signOut}>
+                {logOutLoading ? <CircularProgress /> : "Log Out"}
+              </MenuItem>
             </Menu>
           </div>
         ) : (

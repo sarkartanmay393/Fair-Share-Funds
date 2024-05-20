@@ -1,12 +1,13 @@
 import { Action } from "easy-peasy";
 import { MasterStatement } from "@/utils/masterSheet.ts";
+import { User } from "@supabase/supabase-js";
 
 export enum TransactionType {
   Pay = "Pay",
   Due = "Due",
 }
 
-export interface User {
+export interface UserData {
   email: string;
   id: string;
   name: string;
@@ -37,14 +38,25 @@ export interface Transaction {
   type: "Pay" | "Due";
 }
 
+export interface Message {
+  created_at: string;
+  from_user: string;
+  id: string;
+  to_user: string;
+  text: string;
+}
+
 export interface GlobalStore {
   user: User | null;
+  userData: UserData | null;
   appbarTitle: string;
   rooms: Room[] | null;
   isAdmin: boolean;
 
   setIsAdmin: Action<GlobalStore, boolean>;
   setUser: Action<GlobalStore, User | null>;
+  setUserData: Action<GlobalStore, UserData | null>;
   setAppbarTitle: Action<GlobalStore, string>;
   setRooms: Action<GlobalStore, Room[] | null>;
+  resetStore: Action<GlobalStore>;
 }
