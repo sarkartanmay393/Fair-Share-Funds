@@ -34,6 +34,18 @@ export const SignupBox = ({ signupFormik }: { signupFormik: ISignupBox }) => {
       <TextField
         fullWidth
         variant="outlined"
+        id="username"
+        name="username"
+        label="Username"
+        type="text"
+        value={signupFormik.values.username}
+        onChange={signupFormik.handleChange}
+        error={signupFormik.errors.username ? true : false}
+        helperText={signupFormik.errors.username}
+      />
+      <TextField
+        fullWidth
+        variant="outlined"
         id="email"
         name="email"
         label="Email"

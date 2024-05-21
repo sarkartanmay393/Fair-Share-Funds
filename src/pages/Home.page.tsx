@@ -7,11 +7,12 @@ import { Rooms } from "@/components/Home/Rooms.tsx";
 import RoomCreationDialog from "@/components/Home/RoomCreationDialog.tsx";
 import supabase from "@/utils/supabase/supabase.ts";
 import generateRandomName from "@/utils/generateRandomName.ts";
-import { useStoreState } from "@/store/typedHooks.ts";
+import { useStoreActions, useStoreState } from "@/store/typedHooks.ts";
 
 export default function Homepage() {
   // const navigate = useNavigate();
-  const { user, userData } = useStoreState((state) => state);
+  const { user, userData, rooms } = useStoreState((state) => state);
+  const { setRooms } = useStoreActions((actions) => actions);
 
   const [loading, setLoading] = useState(false);
   const [showRoomCreationModal, setShowRoomCreationModal] = useState(false);
@@ -25,10 +26,11 @@ export default function Homepage() {
       }
 
       const newroom = {
-        users_id: [user?.id],
+        users_id: [user.id],
         name: generateRandomName(),
-        created_by: user?.id,
-        master_sheet: { [user?.id]: null },
+        created_by: user.id,
+        master_sheet: { [user.id]: null },
+        transactions_id: [],
       };
 
       // console.log(newroom);
@@ -39,13 +41,14 @@ export default function Homepage() {
         .single();
 
       if (error) {
-        // alert(error.message + "e");
         throw error;
       }
 
       if (!data) {
         throw new Error("Unknow issue creating a new room!");
       }
+
+      setRooms([...rooms, data]);
 
       let roomsOfCurrentUser = userData?.rooms_id;
       if (roomsOfCurrentUser) {
@@ -65,7 +68,6 @@ export default function Homepage() {
         throw errorUserUpdate;
       }
 
-      
       setLoading(false);
       // navigate(`/room/${data.id}`);
     } catch (e) {

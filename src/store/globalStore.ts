@@ -4,7 +4,7 @@ import { GlobalStore } from "../interfaces/index.ts";
 const globalStore: GlobalStore = {
   user: null,
   userData: null,
-  rooms: null,
+  rooms: [],
   appbarTitle: "RoomPay",
   isAdmin: false,
 
@@ -28,7 +28,7 @@ const globalStore: GlobalStore = {
   resetStore: action((state) => {
     state.user = null;
     state.userData = null;
-    state.rooms = null;
+    state.rooms = [];
     state.isAdmin = false;
     state.appbarTitle = "RoomPay";
   }),

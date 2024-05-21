@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { ToggleButton, Alert, Box, ToggleButtonGroup } from "@mui/material";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import { LoginBox } from "../components/Auth/LoginBox.tsx";
 import { SignupBox } from "../components/Auth/SignupBox.tsx";
@@ -34,8 +34,6 @@ export const AuthPage = () => {
   const { user } = useStoreState((state) => state);
   const { setUser } = useStoreActions((actions) => actions);
 
-  const navigate = useNavigate();
-
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
     newAlignment: string
@@ -58,9 +56,9 @@ export const AuthPage = () => {
           const { data, error } = await supabase.auth.signInWithPassword({
             ...values,
           });
+          
           if (error) {
-            setError(error.message);
-            return;
+            throw error;
           }
 
           setUser(data.user);
@@ -77,11 +75,12 @@ export const AuthPage = () => {
   });
 
   const signupFormik = useFormik({
-    initialValues: { email: "", password: "", name: "" },
+    initialValues: { email: "", password: "", name: "", username: "" },
     validationSchema: Yup.object().shape({
       email: Yup.string().email().min(6, "Too Short!").required("Required"),
       password: Yup.string().min(8).max(24).required("Required"),
       name: Yup.string().min(2).max(16).required("Required"),
+      username: Yup.string().min(6).max(12).required("Required"),
     }),
     onSubmit: (values, { setSubmitting }) => {
       setError("");
@@ -89,6 +88,18 @@ export const AuthPage = () => {
 
       const signUser = async () => {
         try {
+          const { data: exstUsername } = await supabase
+            .from("users")
+            .select()
+            .eq("username", values.username)
+            .single();
+
+          if (exstUsername) {
+            setError("This username already exists.");
+            setSubmitting(false);
+            return;
+          }
+
           const { data, error } = await supabase.auth.signUp({
             email: values.email,
             password: values.password,
@@ -97,10 +108,6 @@ export const AuthPage = () => {
             setError(error.message);
             throw error;
           }
-          setSuccess(() => ({
-            spec: "signup",
-            message: "Successfully created an account!",
-          }));
 
           if (!data.user) {
             setError("There's an issue creating new user.");
@@ -111,37 +118,27 @@ export const AuthPage = () => {
             name: values.name,
             email: values.email,
             id: data.user.id,
-            username: values.email.split("@")[0],
-            rooms_id: null,
+            username: values.username,
+            rooms_id: [],
           };
 
           const { error: error2 } = await supabase
             .from("users")
             .insert(newUser);
+
           if (error2) {
+            if (data.user?.identities) {
+              supabase.auth.unlinkIdentity(data.user.identities[0]);
+            }
             setError(error2.message);
             throw error;
           }
 
-          const { data: data2, error: error3 } =
-            await supabase.auth.signInWithPassword({
-              email: values.email,
-              password: values.password,
-            });
+          setSuccess(() => ({
+            spec: "signup",
+            message: "Successfully created an account!",
+          }));
 
-          if (error3) {
-            setError(error3.message);
-            setAlignment("login");
-            throw error;
-          }
-
-          if (!data2.user) {
-            setError("There's an issue login to the new user.");
-            setAlignment("login");
-            throw new Error("There's an issue login to the new user.");
-          }
-
-          setUser(data2.user);
           setSubmitting(false);
         } catch (e) {
           // setError(()String(e));
@@ -153,13 +150,13 @@ export const AuthPage = () => {
     },
   });
 
-  useEffect(() => {
-    if (success.spec === "login") {
-      navigate("/");
-    }
+  // useEffect(() => {
+  //   if (success.spec === "login") {
+  // navigate("/");
+  //   }
 
-    // console.log(typeof loginFormik);
-  }, [success]);
+  // console.log(typeof loginFormik);
+  // }, [success]);
 
   return (
     <React.Fragment>

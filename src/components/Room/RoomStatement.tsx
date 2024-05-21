@@ -14,7 +14,7 @@ import { useStoreState } from "@/store/typedHooks";
 import { UserData } from "@/interfaces";
 
 interface RoomStatementProps {
-  statement?: Statement;
+  statement: Statement | null;
   roomUsers: UserData[];
 }
 

@@ -15,7 +15,6 @@ import supabase from "@/utils/supabase/supabase.ts";
 interface Props {
   roomUsers: UserData[];
   roomData: Room;
-  roomId: string;
 }
 
 const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
@@ -30,18 +29,18 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
   //   if (!container) return;
 
   //   window.scrollTo({ top: container.scrollHeight });
-  //   // ({ top: trnxBoxy.current?.scrollTop });
+  // ({ top: trnxBoxy.current?.scrollTop });
   //   console.log(window.scrollX);
   // }, []);
 
   useEffect(() => {
-    const fetchCurrentTransactions = async () => {
+    const fetchTransactions = async () => {
       try {
         setLoading(true);
         const { data, error } = await supabase
           .from("transactions")
           .select()
-          .in("id", roomData.transactions_id ?? []);
+          .in("id", roomData.transactions_id);
 
         if (error) {
           throw error;
@@ -54,8 +53,8 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
       }
     };
 
-    fetchCurrentTransactions();
-  }, [roomData.transactions_id]);
+    fetchTransactions();
+  }, []);
 
   useEffect(() => {
     const transactionChannel = supabase
@@ -64,11 +63,16 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "transactions" },
         (payload) => {
-          console.log(`UPDATE transaction`, payload);
+          // TODO: only approval update accepting
+          console.log(`UPDATE transaction`);
           const updatedTransaction = payload.new as Transaction;
-          const updatedTransactions = transactions
-            .filter((t) => t.id !== updatedTransaction.id)
-            .concat(updatedTransaction);
+          const updatedTransactions = transactions.map((t) => ({
+            ...t,
+            approved:
+              t.id !== updatedTransaction.id
+                ? t.approved
+                : updatedTransaction.approved,
+          }));
           setTransactions(updatedTransactions);
         }
       )
@@ -129,7 +133,6 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
                   }}
                 >
                   <TransactionCard
-                    roomId={roomData.id}
                     masterSheet={roomData.master_sheet}
                     fromUserData={fromUser}
                     toUserDataSelf={toUserSelf}

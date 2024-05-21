@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Avatar,
   Box,
@@ -15,7 +15,6 @@ import { MasterStatement, Statement } from "@/utils/masterSheet.ts";
 import supabase from "@/utils/supabase/supabase.ts";
 
 interface Props {
-  roomId: string;
   masterSheet: MasterStatement;
   fromUserData?: UserData;
   toUserDataSelf?: boolean;
@@ -24,32 +23,33 @@ interface Props {
 }
 
 const TransactionCard = ({
-  roomId,
   masterSheet,
   toUserDataSelf,
   roomUsers,
   transaction,
 }: Props) => {
+  const pathname = window.location.pathname;
+  const roomId = pathname.split("/")[2];
   const [isLoading, setIsLoading] = useState(false);
 
   const approveTrnx = async (transactionId: string) => {
     setIsLoading(true);
-    const resp = await supabase
+    const { error } = await supabase
       .from("transactions")
       .update({ approved: true })
       .eq("id", transactionId);
-    if (resp?.error) {
+
+    if (error) {
       alert("Approval failed");
       setIsLoading(false);
       return;
     }
 
-    setTimeout(async () => {
       const ms = masterSheet;
       const fromUserDataStatement =
-        ms?.getStatement(transaction?.from_user) || new Statement();
+        ms.getStatement(transaction?.from_user) || new Statement();
       const toUserDataStatement =
-        ms?.getStatement(transaction.to_user) || new Statement();
+        ms.getStatement(transaction.to_user) || new Statement();
 
       const fus_tua =
         Number(fromUserDataStatement?.getAmount(transaction.to_user) || 0) +
@@ -60,27 +60,31 @@ const TransactionCard = ({
         transaction.amount;
       toUserDataStatement?.setAmount(transaction.from_user, tus_fua + "");
 
-      const updateMasterSheet = await supabase
-        ?.from("rooms")
-        .update({ master_sheet: ms?.toJson() })
+      const { error: e2 } = await supabase
+        .from("rooms")
+        .update({ master_sheet: ms.toJson() })
         .eq("id", roomId);
 
-      if (updateMasterSheet?.error) {
+      if (e2) {
         alert("Failed master sheet update");
         setIsLoading(false);
         return;
       }
 
       setIsLoading(false);
-    }, 200);
   };
 
-  const transactionBy = roomUsers.find(
-    (u) => u.id === transaction.from_user
-  )?.name;
-  const transactionTo = roomUsers.find(
-    (u) => u.id === transaction.to_user
-  )?.name;
+  const [transactionBy, setTransactionBy] = useState("");
+  const [transactionTo, setTransactionTo] = useState("");
+
+  useEffect(() => {
+    setTransactionBy(
+      roomUsers.find((u) => u.id === transaction.from_user)?.name ?? ""
+    );
+    setTransactionTo(
+      roomUsers.find((u) => u.id === transaction.to_user)?.name ?? ""
+    );
+  }, []);
 
   return (
     <Card

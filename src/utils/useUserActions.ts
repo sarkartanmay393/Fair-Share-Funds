@@ -10,6 +10,7 @@ export const useUserActions = () => {
   const { setUser, setUserData } = useStoreActions((action) => action);
 
   const loadAuthenticatedUser = async () => {
+    console.log('Auth Loading')
     try {
       setIsLoading(true);
       const { data, error } = await supabase.auth.getUser();
@@ -29,6 +30,7 @@ export const useUserActions = () => {
   };
 
   const loadCurrentUserData = async () => {
+    console.log("User Data Loading");
     if (user) {
       setIsLoading(true);
       try {
@@ -54,10 +56,10 @@ export const useUserActions = () => {
 
   useEffect(() => {
     if (!user) {
-      console.log("Hooks auto fetching auth user, user data");
-      loadAuthenticatedUser().then(() => {
-        console.log("Auth Loaded");
-      });
+      // console.log(/"Hooks auto fetching auth user, user data");
+      // loadAuthenticatedUser().then(() => {
+      //   console.log("Auth Loaded");
+      // });
     }
   }, []);
 

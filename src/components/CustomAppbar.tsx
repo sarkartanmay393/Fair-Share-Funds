@@ -15,7 +15,6 @@ import {
 import { ExpandMore, AccountCircle, Settings } from "@mui/icons-material";
 
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
-import { useCurrentRoomData } from "../utils/useCurrentRoomData.ts";
 
 import Logo from "../assets/logo.png";
 import BackIcon from "../assets/icons8-back-36.png";
@@ -32,12 +31,10 @@ export default function CustomAppbar() {
     null
   );
 
-  const { appbarTitle, user } = useStoreState((state) => state);
+  const { appbarTitle, user, isAdmin } = useStoreState((state) => state);
   const { resetStore } = useStoreActions((action) => action);
 
   const [logOutLoading, setLogOutLoading] = useState(false);
-
-  const { adminAccess } = useCurrentRoomData();
 
   const signOut = async () => {
     setLogOutLoading(true);
@@ -45,7 +42,6 @@ export default function CustomAppbar() {
       await supabase.auth.signOut();
       resetStore();
       setLogOutLoading(false);
-      navigate("/auth");
     } catch (error) {
       console.log(error);
       setLogOutLoading(false);
@@ -132,26 +128,21 @@ export default function CustomAppbar() {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <MenuItem
-                disabled={!adminAccess.current || pathname.includes("manage")}
-                onClick={() =>
-                  !pathname.includes("manage") && navigate(`${pathname}/manage`)
-                }
-              >
-                {adminAccess.current ? (
-                  <>
-                    <Avatar />
-                    Manage Users{" "}
-                  </>
-                ) : (
-                  <>No Admin Access!</>
-                )}
-              </MenuItem>
-              {!adminAccess.current && (
-                <MenuItem onClick={() => window.location.reload()}>
-                  Window Reload
+              {isAdmin ? (
+                <MenuItem
+                  sx={{
+                    display: pathname.includes("manage") ? "none" : "flex",
+                  }}
+                  disabled={!isAdmin}
+                  onClick={() =>
+                    !pathname.includes("manage") &&
+                    navigate(`${pathname}/manage`)
+                  }
+                >
+                  <Avatar />
+                  Manage Users{" "}
                 </MenuItem>
-              )}
+              ) : null}
               {/* <Divider /> */}
               <MenuItem disabled onClick={() => setAnchorEl(null)}>
                 <ListItemIcon>
@@ -192,7 +183,13 @@ export default function CustomAppbar() {
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
             >
-              <MenuItem disabled>Profile</MenuItem>
+              <MenuItem
+                onClick={() =>
+                  window.navigator.clipboard.writeText(user.email ?? "")
+                }
+              >
+                {user.email}
+              </MenuItem>
               <MenuItem disabled={logOutLoading} onClick={signOut}>
                 {logOutLoading ? <CircularProgress /> : "Log Out"}
               </MenuItem>

@@ -36,6 +36,7 @@ export class MasterStatement {
       const ss = new Statement(perUserStatement[1]);
       this.perUserStatements.set(perUserStatement[0], ss);
     });
+    console.log("MS", this.perUserStatements);
   }
 
   toJson(): Json {
@@ -48,13 +49,14 @@ export class MasterStatement {
       masterRecord[userId] = pair;
     });
 
-    // console.log(masterRecord);
+    console.log("MR", masterRecord);
     return masterRecord;
   }
-  getStatement(key: string): Statement {
+  getStatement(key: string): Statement | null {
     const userStatement = this.perUserStatements.get(key);
     if (!userStatement) {
-      throw new Error("No statement found with key");
+      console.log("No statement found with key");
+      return null;
     }
     return userStatement;
   }

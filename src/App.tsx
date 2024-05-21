@@ -4,53 +4,83 @@ import Layout from "./layout/layout.tsx";
 import Homepage from "./pages/Home.page.tsx";
 import { AuthPage } from "./pages/Auth.page.tsx";
 import RoomPage from "./pages/Room.page.tsx";
-import { Box, CircularProgress } from "@mui/material";
 import NotFoundPage from "./pages/NotFound.page.tsx";
-// import RoomUserManager from "./pages/UserManager.page.tsx";
-import { useUserActions } from "./utils/useUserActions.ts";
-import { useStoreState } from "./store/typedHooks.ts";
+import RoomUserManager from "./pages/UserManager.page.tsx";
+// import { useUserActions } from "./utils/useUserActions.ts";
+import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
 import { useEffect } from "react";
+import supabase from "./utils/supabase/supabase.ts";
+import { UserData } from "./interfaces/index.ts";
+// import { useEffect } from "react";
 
 function App() {
-  const { user } = useStoreState((state) => state);
-  const { isLoading, loadCurrentUserData } = useUserActions();
+  const { user, userData } = useStoreState((state) => state);
+  const { setUser, setUserData } = useStoreActions((action) => action);
+
+  const fetchUserData = async (userId: string) => {
+    console.log("Fetch Main User Data");
+    const { data, error } = await supabase
+      .from("users")
+      .select()
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      return null;
+    }
+
+    return data as UserData;
+  };
 
   useEffect(() => {
-    if (user) {
-      loadCurrentUserData().then(() => {
-        console.log("User Data Loaded");
-      });
+    const fetchAuthData = async () => {
+      console.log("Fetch Main Auth");
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        return null;
+      }
+      return data.user;
+    };
+
+    const action = async () => {
+      const user = await fetchAuthData();
+      if (user) {
+        setUser(user);
+        console.log("Loaded Main Auth");
+        const userData = await fetchUserData(user.id);
+        setUserData(userData);
+        console.log("Loaded Main User Data");
+      }
+    };
+
+    if (!user) {
+      action();
     }
-  }, [user]);
+  }, [setUser, setUserData, user]);
+
+  useEffect(() => {
+    if (user && !userData) {
+      fetchUserData(user.id);
+    }
+  }, [user, userData]);
 
   return (
     <BrowserRouter>
       <Layout>
-        {isLoading ? (
-          <Box
-            display="flex"
-            width="100%"
-            justifyContent="center"
-            marginTop={6}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            {user === null && <Navigate to="/auth" />}
-            <Routes>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/auth" element={<AuthPage />} />
+        <>
+          {!user && !userData && <Navigate to="/auth" />}
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/auth" element={<AuthPage />} />
 
-              <Route path="/room/:id">
-                <Route index element={<RoomPage />} />
-                {/* <Route path="manage" element={<RoomUserManager />} /> */}
-              </Route>
+            <Route path="/room/:id">
+              <Route index element={<RoomPage />} />
+              <Route path="manage" element={<RoomUserManager />} />
+            </Route>
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </>
-        )}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </>
       </Layout>
     </BrowserRouter>
   );

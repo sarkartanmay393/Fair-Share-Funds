@@ -15,95 +15,81 @@ export default function RoomPage() {
   // const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [roomUsers, setRoomUsers] = useState<UserData[]>([]);
+  const [roomUserIds, setRoomUserIds] = useState<string[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
-  const [roomStatement, setRoomStatement] = useState<Statement>();
+  const [roomStatement, setRoomStatement] = useState<Statement | null>(null);
 
-  const { user } = useStoreState((state) => state);
-  const { setAppbarTitle } = useStoreActions((actions) => actions);
+  const { user, rooms } = useStoreState((state) => state);
+  const { setAppbarTitle, setIsAdmin } = useStoreActions((actions) => actions);
+
+  const fetchCurrentRoomUsers = async (usersId: string[]) => {
+    console.log("Fetch Room Users: " + usersId.length);
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select()
+        .in("id", usersId);
+
+      if (error) {
+        console.log(error.message);
+      }
+
+      console.log("Loaded Room Users: " + data?.length);
+
+      setRoomUsers((data as UserData[]) ?? []);
+      setLoading(false);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCurrentRoom = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("rooms")
-          .select()
-          .eq("id", id)
-          .single();
+    setLoading(true);
+    const cr = rooms.find((room) => (room.id = id));
+    if (cr && user) {
+      setCurrentRoom(cr);
+      setRoomUserIds(cr.users_id);
 
-        if (error) {
-          throw error;
-        }
+      setIsAdmin(cr.created_by === user.id);
 
-        const cRoom: Room = {
-          created_by: data.created_by,
-          id: data.id,
-          last_updated: data.last_updated,
-          master_sheet: new MasterStatement(data.master_sheet),
-          name: data.name,
-          transactions_id: data.tratransactions_id,
-          users_id: data.users_id,
-        };
+      const statement = cr.master_sheet.getStatement(user.id);
+      setRoomStatement(statement);
 
-        setCurrentRoom(cRoom);
-        // setLoading(false);
-      } catch (e) {
-        console.log(e);
-        setLoading(false);
-      }
-    };
-
-    fetchCurrentRoom();
+      setAppbarTitle(cr.name || "Room ~");
+    }
   }, [id]);
 
   useEffect(() => {
-    const fetchCurrentRoomUsers = async (usersId: string[]) => {
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select()
-          .in("id", [usersId]);
-
-        if (error) {
-          throw error;
+    const currentRoomChannel = supabase
+      .channel(`room ch ${currentRoom?.id ?? id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "transactions" },
+        (payload) => {
+          console.log(`UPDATE current room`);
+          const nr = payload.new;
+          setCurrentRoom({
+            ...nr,
+            master_sheet: new MasterStatement(nr.master_sheet),
+          } as Room);
+          setRoomUserIds(nr.users_id);
         }
-
-        setRoomUsers(data);
-        setLoading(false);
-      } catch (e) {
-        console.log(e);
-        setLoading(false);
-      }
-    };
-
-    if (currentRoom) {
-      setAppbarTitle(currentRoom.name || "Room ~");
-      fetchCurrentRoomUsers(currentRoom.users_id);
-    }
+      )
+      .subscribe();
 
     return () => {
-      setAppbarTitle("Roompay");
+      supabase.removeChannel(currentRoomChannel);
     };
-  }, [currentRoom]);
+  }, []);
 
   useEffect(() => {
-    if (currentRoom) {
-      setTimeout(() => {
-        console.log("parsin");
-        try {
-          const statement = currentRoom.master_sheet.getStatement(
-            user?.id ?? ""
-          );
-          setRoomStatement(statement);
-        } catch (error) {
-          console.log(error);
-        }
-      }, 400);
-    }
-  }, [currentRoom, user?.id]);
+    console.log("Fetch with " + roomUserIds.length);
+    fetchCurrentRoomUsers(roomUserIds);
+  }, []);
 
   if (!currentRoom) {
-    return null;
+    return <CircularProgress />;
   }
 
   return (
@@ -122,11 +108,7 @@ export default function RoomPage() {
       ) : (
         <>
           <RoomStatement statement={roomStatement} roomUsers={roomUsers} />
-          <TransactionsHistory
-            roomUsers={roomUsers}
-            roomData={currentRoom}
-            roomId={id}
-          />
+          <TransactionsHistory roomUsers={roomUsers} roomData={currentRoom} />
         </>
       )}
       <InputBar roomData={currentRoom} roomUsers={roomUsers} />

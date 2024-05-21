@@ -11,11 +11,12 @@ import {
   Typography,
 } from "@mui/material";
 
-import { useStoreState } from "@/store/typedHooks.ts";
+import { useStoreActions, useStoreState } from "@/store/typedHooks.ts";
 import supabase from "@/utils/supabase/supabase.ts";
 import { MasterStatement } from "@/utils/masterSheet.ts";
 
-import { Room } from "../../interfaces/index.ts";
+import { Room, UserData } from "../../interfaces/index.ts";
+import { User } from "@supabase/supabase-js";
 
 const styles: { [key: string]: SxProps<Theme> } = {
   roomcard: {
@@ -37,14 +38,14 @@ const styles: { [key: string]: SxProps<Theme> } = {
 };
 
 export const Rooms = () => {
-  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(false);
-  const { user, userData } = useStoreState((state) => state);
+  const { user, userData, rooms } = useStoreState((state) => state);
+  const { setRooms, setUserData } = useStoreActions((actions) => actions);
 
   useEffect(() => {
     // loads the rooms information to the app
     const loadRooms = async () => {
-      // console.log("loadRooms");
+      console.log("Load Rooms");
       try {
         setLoading(true);
         // console.log("userData", userData);
@@ -53,10 +54,13 @@ export const Rooms = () => {
             .from("rooms")
             .select()
             .in("id", userData.rooms_id);
+
           // console.log("LOG", data, error);
+
           if (error) {
             throw error;
           }
+
           if (data.length > 0) {
             const rooms: Room[] = data.map((d) => ({
               created_by: d.created_by,
@@ -70,7 +74,9 @@ export const Rooms = () => {
             setRooms(rooms);
             console.log("Rooms Loaded");
             setLoading(false);
+            return;
           }
+          setLoading(false);
         }
       } catch (error) {
         console.log(error);
@@ -78,33 +84,31 @@ export const Rooms = () => {
       }
     };
 
-    if (user) loadRooms();
-  }, [user, userData?.rooms_id]);
+    if (user && userData) {
+      loadRooms();
+    }
+  }, [user, userData]);
 
   useEffect(() => {
-    const roomsChannel = supabase
-      .channel(`rooms_ch ${userData?.username}`)
+    const userChannel = supabase
+      .channel(`user ch ${userData?.id}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "rooms" },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "users",
+        },
         (payload) => {
+          // if (payload.new.id)
           // console.log(payload);
-          const newRoom: Room = {
-            created_by: payload.new.created_by,
-            id: payload.new.id,
-            last_updated: payload.new.last_updated,
-            master_sheet: new MasterStatement(payload.new.master_sheet),
-            name: payload.new.name,
-            transactions_id: payload.new.tratransactions_id,
-            users_id: payload.new.users_id,
-          };
-          setRooms((pr) => [...pr, newRoom]);
+          setUserData(payload.new as UserData);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(userChannel);
     };
   }, []);
 

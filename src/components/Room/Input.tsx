@@ -47,10 +47,8 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
         throw error;
       }
 
-      const updatedTransactionIds = [
-        ...(roomData?.transactions_id ?? []),
-        data.id,
-      ];
+      const updatedTransactionIds = [...roomData.transactions_id, data.id];
+      console.log("Update Room Data");
 
       const updateRoomResp = await supabase
         .from("rooms")
@@ -63,10 +61,12 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
         throw updateRoomResp.error;
       }
 
+      console.log("Updated Room Data!");
       setLoading(false);
       resetForm();
     } catch (e) {
       setLoading(false);
+      console.log(e);
       setError(String(e));
     }
   };
@@ -88,9 +88,10 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
         const newTransaction = {
           amount: Number(values.amount),
           from_user: user?.id,
-          room_id: roomData?.id,
+          room_id: roomData.id,
           to_user: values.toUser,
           type: values.transactionType,
+          approved: false,
         } as Transaction;
 
         if (newTransaction.type === "Due") {
@@ -99,7 +100,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
 
         sendTransaction(newTransaction, resetForm);
         setSubmitting(false);
-      }, 200);
+      }, 0);
     },
   });
 

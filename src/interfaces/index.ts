@@ -11,7 +11,7 @@ export interface UserData {
   email: string;
   id: string;
   name: string;
-  rooms_id: string[] | null;
+  rooms_id: string[];
   username: string;
 }
 
@@ -21,7 +21,7 @@ export interface Room {
   last_updated: string | null;
   master_sheet: MasterStatement;
   name: string;
-  transactions_id: string[] | null;
+  transactions_id: string[];
   users_id: string[];
 }
 
@@ -50,13 +50,13 @@ export interface GlobalStore {
   user: User | null;
   userData: UserData | null;
   appbarTitle: string;
-  rooms: Room[] | null;
+  rooms: Room[];
   isAdmin: boolean;
 
   setIsAdmin: Action<GlobalStore, boolean>;
   setUser: Action<GlobalStore, User | null>;
   setUserData: Action<GlobalStore, UserData | null>;
   setAppbarTitle: Action<GlobalStore, string>;
-  setRooms: Action<GlobalStore, Room[] | null>;
+  setRooms: Action<GlobalStore, Room[]>;
   resetStore: Action<GlobalStore>;
 }
