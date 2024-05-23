@@ -12,7 +12,12 @@ import {
   ListItemIcon,
   CircularProgress,
 } from "@mui/material";
-import { ExpandMore, AccountCircle, Settings } from "@mui/icons-material";
+import {
+  ExpandMore,
+  AccountCircle,
+  Settings,
+  Delete,
+} from "@mui/icons-material";
 
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 
@@ -35,6 +40,7 @@ export default function CustomAppbar() {
   const { resetStore } = useStoreActions((action) => action);
 
   const [logOutLoading, setLogOutLoading] = useState(false);
+  const [deletingLoading, setDeletingLoading] = useState(false);
 
   const signOut = async () => {
     setLogOutLoading(true);
@@ -45,6 +51,18 @@ export default function CustomAppbar() {
     } catch (error) {
       console.log(error);
       setLogOutLoading(false);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    setDeletingLoading(true);
+    try {
+      await supabase.from("rooms").delete().eq("id", roomId);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDeletingLoading(false);
     }
   };
 
@@ -141,6 +159,12 @@ export default function CustomAppbar() {
                 >
                   <Avatar />
                   Manage Users{" "}
+                </MenuItem>
+              ) : null}
+              {isAdmin ? (
+                <MenuItem disabled={deletingLoading} onClick={handleDeleteRoom}>
+                  <Delete />
+                  {deletingLoading ? <CircularProgress /> : "Delete Room"}
                 </MenuItem>
               ) : null}
               {/* <Divider /> */}

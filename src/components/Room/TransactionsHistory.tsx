@@ -6,21 +6,20 @@ import {
   Typography,
 } from "@mui/material";
 
-import { Room, Transaction, UserData } from "../../interfaces/index.ts";
+import { Transaction, UserData } from "../../interfaces/index.ts";
 import TransactionCard from "./TransactionCard.tsx";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useStoreState } from "@/store/typedHooks.ts";
-import supabase from "@/utils/supabase/supabase.ts";
 
 interface Props {
   roomUsers: UserData[];
-  roomData: Room;
+  transactions: Transaction[];
 }
 
-const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
+const TransactionsHistory = ({ roomUsers, transactions }: Props) => {
   const trnxBoxy = useRef<HTMLElement>();
-  const [loading, setLoading] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading] = useState(false);
+  // const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const { user } = useStoreState((state) => state);
 
@@ -33,71 +32,17 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
   //   console.log(window.scrollX);
   // }, []);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("transactions")
-          .select()
-          .in("id", roomData.transactions_id);
 
-        if (error) {
-          throw error;
-        }
-        setTransactions(data as Transaction[]);
-        setLoading(false);
-      } catch (e) {
-        console.log(e);
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, []);
-
-  useEffect(() => {
-    const transactionChannel = supabase
-      .channel(`transaction ch ${roomData.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "transactions" },
-        (payload) => {
-          // TODO: only approval update accepting
-          console.log(`UPDATE transaction`);
-          const updatedTransaction = payload.new as Transaction;
-          const updatedTransactions = transactions.map((t) => ({
-            ...t,
-            approved:
-              t.id !== updatedTransaction.id
-                ? t.approved
-                : updatedTransaction.approved,
-          }));
-          setTransactions(updatedTransactions);
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "transactions" },
-        (payload) => {
-          console.log(`INSERT transaction`, payload);
-          setTransactions((p) => p.concat(payload.new as Transaction));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(transactionChannel);
-    };
-  }, []);
 
   return (
     <Box
       ref={trnxBoxy}
       width="100%"
-      height="calc(100vh - 64px)"
+      height="calc(100vh - 220px)"
       paddingX={1}
       border="px solid green"
+      margin="auto"
+      // paddingBottom={2}
       // overflow="clip"
     >
       {loading ? (
@@ -107,13 +52,14 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
           dense
           sx={{
             // border: '1px solid red',
-            // display: "flex",
+            display: "flex",
             // flexDirection: "column",
             // justifyContent: "end",
             height: "100%",
-            pt: "62px",
-            pb: { xs: "68px", md: "74px" },
+            // pt: "62px",
+            // pb: { xs: "68px", md: "74px" },
             overflowY: "scroll",
+            flexDirection: "column-reverse",
           }}
         >
           {transactions.length > 0 ? (
@@ -133,11 +79,9 @@ const TransactionsHistory = ({ roomUsers, roomData }: Props) => {
                   }}
                 >
                   <TransactionCard
-                    masterSheet={roomData.master_sheet}
                     fromUserData={fromUser}
                     toUserDataSelf={toUserSelf}
                     transaction={transaction}
-                    roomUsers={roomUsers}
                   />
                 </ListItem>
               );

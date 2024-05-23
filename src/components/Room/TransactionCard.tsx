@@ -11,29 +11,51 @@ import { Transaction, UserData } from "../../interfaces/index.ts";
 
 import { Done, DoneAll, Close } from "@mui/icons-material";
 
-import { MasterStatement, Statement } from "@/utils/masterSheet.ts";
+import { MasterStatement } from "@/utils/masterSheet.ts";
 import supabase from "@/utils/supabase/supabase.ts";
+import { useStoreState } from "@/store/typedHooks.ts";
 
 interface Props {
-  masterSheet: MasterStatement;
   fromUserData?: UserData;
   toUserDataSelf?: boolean;
-  roomUsers: UserData[];
   transaction: Transaction;
 }
 
-const TransactionCard = ({
-  masterSheet,
-  toUserDataSelf,
-  roomUsers,
-  transaction,
-}: Props) => {
+const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
+
+  const { masterSheet } = useStoreState((state) => state);
   const [isLoading, setIsLoading] = useState(false);
 
   const approveTrnx = async (transactionId: string) => {
     setIsLoading(true);
+    const json_ms = masterSheet?.toJson();
+    const ms = new MasterStatement(json_ms);
+    const fromUserDataStatement = ms.getStatement(transaction.from_user);
+    const toUserDataStatement = ms.getStatement(transaction.to_user);
+
+    const fus_tua =
+      Number(fromUserDataStatement.getAmount(transaction.to_user) ?? 0) +
+      transaction.amount;
+    fromUserDataStatement.setAmount(transaction.to_user, fus_tua + "");
+
+    const tus_fua =
+      Number(toUserDataStatement.getAmount(transaction.from_user) ?? 0) +
+      transaction.amount;
+    toUserDataStatement.setAmount(transaction.from_user, tus_fua + "");
+
+    const { error: e2 } = await supabase
+      .from("rooms")
+      .update({ master_sheet: ms.toJson() })
+      .eq("id", roomId);
+
+    if (e2) {
+      alert("Failed master sheet update");
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await supabase
       .from("transactions")
       .update({ approved: true })
@@ -45,45 +67,36 @@ const TransactionCard = ({
       return;
     }
 
-      const ms = masterSheet;
-      const fromUserDataStatement =
-        ms.getStatement(transaction?.from_user) || new Statement();
-      const toUserDataStatement =
-        ms.getStatement(transaction.to_user) || new Statement();
-
-      const fus_tua =
-        Number(fromUserDataStatement?.getAmount(transaction.to_user) || 0) +
-        transaction.amount;
-      fromUserDataStatement?.setAmount(transaction.to_user, fus_tua + "");
-      const tus_fua =
-        Number(toUserDataStatement?.getAmount(transaction.from_user) || 0) +
-        transaction.amount;
-      toUserDataStatement?.setAmount(transaction.from_user, tus_fua + "");
-
-      const { error: e2 } = await supabase
-        .from("rooms")
-        .update({ master_sheet: ms.toJson() })
-        .eq("id", roomId);
-
-      if (e2) {
-        alert("Failed master sheet update");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(false);
+    setIsLoading(false);
   };
 
-  const [transactionBy, setTransactionBy] = useState("");
-  const [transactionTo, setTransactionTo] = useState("");
+  const [sendBy, setSendBy] = useState("");
+  const [sentTo, setSentTo] = useState("");
 
   useEffect(() => {
-    setTransactionBy(
-      roomUsers.find((u) => u.id === transaction.from_user)?.name ?? ""
-    );
-    setTransactionTo(
-      roomUsers.find((u) => u.id === transaction.to_user)?.name ?? ""
-    );
+    const loadSendersNames = async () => {
+      try {
+        const { data } = await supabase
+          .from("users")
+          .select(`name`)
+          .eq("id", transaction.from_user)
+          .single();
+
+        setSendBy(data?.name);
+
+        const { data: data2 } = await supabase
+          .from("users")
+          .select(`name`)
+          .eq("id", transaction.to_user)
+          .single();
+
+        setSentTo(data2?.name);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadSendersNames();
   }, []);
 
   return (
@@ -102,7 +115,7 @@ const TransactionCard = ({
       }}
     >
       <Box sx={{ display: "flex", gap: "18px" }} border="px solid red">
-        <Avatar>{(transactionBy ?? "Noname").trim().charAt(0)}</Avatar>
+        <Avatar>{(sendBy ?? "Noname").trim().charAt(0)}</Avatar>
         <Box
           sx={{
             display: "flex",
@@ -110,11 +123,11 @@ const TransactionCard = ({
           }}
         >
           <Typography sx={{ fontSize: "15px" }}>
-            {transactionBy ?? "Noname"}
+            {sendBy ?? "Noname"}
           </Typography>
           <Typography sx={{ fontSize: "12px" }}>
             {transaction.type === "Pay" ? "Paid" : "Borrowed"}{" "}
-            <span style={{ fontWeight: 600 }}>{transactionTo ?? "Noname"}</span>
+            <span style={{ fontWeight: 600 }}>{sentTo ?? "Noname"}</span>
           </Typography>
         </Box>
       </Box>

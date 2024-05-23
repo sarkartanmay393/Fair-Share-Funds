@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -9,17 +9,53 @@ import {
   Typography,
 } from "@mui/material";
 import { KeyboardArrowDown } from "@mui/icons-material";
-import { Statement } from "@/utils/masterSheet";
 import { useStoreState } from "@/store/typedHooks";
-import { UserData } from "@/interfaces";
+import { Statement, UserData } from "@/interfaces";
+import supabase from "@/utils/supabase/supabase";
 
 interface RoomStatementProps {
-  statement: Statement | null;
   roomUsers: UserData[];
 }
 
-const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
+const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
+  const pathname = window.location.pathname;
+  const roomId = pathname.split("/")[2];
+
   const { user } = useStoreState((state) => state);
+  const [statements, setStatements] = useState<Statement[]>([]);
+
+  const fetchRoomByUserIdAndRoomId = async (userId: string, roomId: string) => {
+    const { data, error } = await supabase
+      .from("statements")
+      .select()
+      .eq("roomId", roomId)
+      .contains("users", [userId])
+      .single();
+
+    if (error) {
+      console.error("Error fetching room:", error);
+      return null;
+    }
+
+    return data as Statement;
+  };
+
+  useEffect(() => {
+    const loadAllStatements = async () => {
+      const temp = roomUsers.map(async (user) => {
+        return await fetchRoomByUserIdAndRoomId(user.id, roomId);
+      });
+      const allStatements = await Promise.all(temp);
+      const cleaned: Statement[] = [];
+      allStatements.forEach((s) => {
+        if (s) cleaned.push(s);
+      });
+      setStatements(cleaned);
+    };
+    if (!statements.length) {
+      loadAllStatements();
+    }
+  }, [roomUsers]);
 
   return (
     <Card
@@ -42,8 +78,7 @@ const RoomStatement = ({ statement, roomUsers }: RoomStatementProps) => {
           <Typography>Statement</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          {statement ? (
-            roomUsers.length > 0 ? (
+          {statements.length > 0 ? (
               roomUsers.map((u, index) => {
                 const name = u.name;
                 const amount = Number(statement?.getAmount(u.id) || 0);

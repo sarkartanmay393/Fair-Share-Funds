@@ -13,10 +13,8 @@ import {
 
 import { useStoreActions, useStoreState } from "@/store/typedHooks.ts";
 import supabase from "@/utils/supabase/supabase.ts";
-import { MasterStatement } from "@/utils/masterSheet.ts";
 
-import { Room, UserData } from "../../interfaces/index.ts";
-import { User } from "@supabase/supabase-js";
+import { PackagedRoom, UserData } from "../../interfaces/index.ts";
 
 const styles: { [key: string]: SxProps<Theme> } = {
   roomcard: {
@@ -39,8 +37,9 @@ const styles: { [key: string]: SxProps<Theme> } = {
 
 export const Rooms = () => {
   const [loading, setLoading] = useState(false);
-  const { user, userData, rooms } = useStoreState((state) => state);
-  const { setRooms, setUserData } = useStoreActions((actions) => actions);
+  const [rooms, setRooms] = useState<PackagedRoom[]>([]);
+  const { user, userData } = useStoreState((state) => state);
+  const { setUserData } = useStoreActions((actions) => actions);
 
   useEffect(() => {
     // loads the rooms information to the app
@@ -52,9 +51,9 @@ export const Rooms = () => {
         if (userData?.rooms_id) {
           const { data, error } = await supabase
             .from("rooms")
-            .select()
-            .in("id", userData.rooms_id);
-
+            .select(`id, name, users_id`)
+            .in("id", userData.rooms_id)
+            .order("last_updated", { ascending: false });
           // console.log("LOG", data, error);
 
           if (error) {
@@ -62,13 +61,9 @@ export const Rooms = () => {
           }
 
           if (data.length > 0) {
-            const rooms: Room[] = data.map((d) => ({
-              created_by: d.created_by,
+            const rooms: PackagedRoom[] = data.map((d) => ({
               id: d.id,
-              last_updated: d.last_updated,
-              master_sheet: new MasterStatement(d.master_sheet),
               name: d.name,
-              transactions_id: d.tratransactions_id,
               users_id: d.users_id,
             }));
             setRooms(rooms);
@@ -128,11 +123,15 @@ export const Rooms = () => {
                     },
                   }}
                 >
-                  {room.users_id.map((userId) => (
-                    <Avatar key={userId} sx={{ width: "24px", height: "24px" }}>
-                      <Typography>.</Typography>
-                    </Avatar>
-                  ))}
+                  {room.users_id &&
+                    room.users_id.map((userId) => (
+                      <Avatar
+                        key={userId}
+                        sx={{ width: "24px", height: "24px" }}
+                      >
+                        <Typography>.</Typography>
+                      </Avatar>
+                    ))}
                 </AvatarGroup>
                 <Typography
                   color="black"

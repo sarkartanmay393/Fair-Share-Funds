@@ -56,7 +56,7 @@ export const AuthPage = () => {
           const { data, error } = await supabase.auth.signInWithPassword({
             ...values,
           });
-          
+
           if (error) {
             throw error;
           }
@@ -138,6 +138,8 @@ export const AuthPage = () => {
             spec: "signup",
             message: "Successfully created an account!",
           }));
+
+          setAlignment("login");
 
           setSubmitting(false);
         } catch (e) {

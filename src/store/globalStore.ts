@@ -4,10 +4,13 @@ import { GlobalStore } from "../interfaces/index.ts";
 const globalStore: GlobalStore = {
   user: null,
   userData: null,
-  rooms: [],
+  masterSheet: null,
   appbarTitle: "RoomPay",
   isAdmin: false,
 
+  setMasterSheet: action((state, payload) => {
+    state.masterSheet = payload;
+  }),
   setUser: action((state, payload) => {
     state.user = payload;
     // console.log("state", state.user);
@@ -18,9 +21,6 @@ const globalStore: GlobalStore = {
   setAppbarTitle: action((state, payload) => {
     state.appbarTitle = payload;
   }),
-  setRooms: action((state, payload) => {
-    state.rooms = payload;
-  }),
   setIsAdmin: action((state, payload) => {
     state.isAdmin = payload;
     // console.log(payload)
@@ -28,9 +28,9 @@ const globalStore: GlobalStore = {
   resetStore: action((state) => {
     state.user = null;
     state.userData = null;
-    state.rooms = [];
     state.isAdmin = false;
     state.appbarTitle = "RoomPay";
+    state.masterSheet = null;
   }),
 };
 

@@ -8,79 +8,81 @@ import NotFoundPage from "./pages/NotFound.page.tsx";
 import RoomUserManager from "./pages/UserManager.page.tsx";
 // import { useUserActions } from "./utils/useUserActions.ts";
 import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import supabase from "./utils/supabase/supabase.ts";
 import { UserData } from "./interfaces/index.ts";
+import { CircularProgress } from "@mui/material";
 // import { useEffect } from "react";
 
 function App() {
+  const [loading, setLoading] = useState(true);
   const { user, userData } = useStoreState((state) => state);
   const { setUser, setUserData } = useStoreActions((action) => action);
 
-  const fetchUserData = async (userId: string) => {
-    console.log("Fetch Main User Data");
-    const { data, error } = await supabase
-      .from("users")
-      .select()
-      .eq("id", userId)
-      .single();
-
-    if (error) {
-      return null;
-    }
-
-    return data as UserData;
-  };
-
   useEffect(() => {
-    const fetchAuthData = async () => {
+    const loadAuthData = async () => {
       console.log("Fetch Main Auth");
+      setLoading(true);
       const { data, error } = await supabase.auth.getUser();
       if (error) {
+        setLoading(false);
         return null;
       }
-      return data.user;
-    };
-
-    const action = async () => {
-      const user = await fetchAuthData();
-      if (user) {
-        setUser(user);
-        console.log("Loaded Main Auth");
-        const userData = await fetchUserData(user.id);
-        setUserData(userData);
-        console.log("Loaded Main User Data");
-      }
+      setUser(data.user);
+      console.log("Loaded Main Auth");
     };
 
     if (!user) {
-      action();
+      loadAuthData();
     }
-  }, [setUser, setUserData, user]);
+  }, [user]);
 
   useEffect(() => {
+    const loadUserData = async (userId: string) => {
+      console.log("Fetch Main User Data");
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("users")
+        .select()
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        setLoading(false);
+        return null;
+      }
+
+      setLoading(false);
+      setUserData(data as UserData);
+      console.log("Loaded Main User Data");
+    };
+
     if (user && !userData) {
-      fetchUserData(user.id);
+      loadUserData(user.id);
     }
   }, [user, userData]);
 
   return (
     <BrowserRouter>
       <Layout>
-        <>
-          {!user && !userData && <Navigate to="/auth" />}
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/auth" element={<AuthPage />} />
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <>
+            {!user && !userData && <Navigate to="/auth" />}
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/auth" element={<AuthPage />} />
 
-            <Route path="/room/:id">
-              <Route index element={<RoomPage />} />
-              <Route path="manage" element={<RoomUserManager />} />
-            </Route>
+              <Route path="/room/:id">
+                <Route index element={<RoomPage />} />
+                <Route path="manage" element={<RoomUserManager />} />
+              </Route>
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </>
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </>
+        )}
       </Layout>
     </BrowserRouter>
   );

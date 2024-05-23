@@ -15,15 +15,25 @@ export interface UserData {
   username: string;
 }
 
+export interface Statement {
+  created_at: string;
+  id: string;
+  amount: number;
+  roomId: string;
+  users: string[];
+}
+
 export interface Room {
   created_by: string;
   id: string;
   last_updated: string | null;
-  master_sheet: MasterStatement;
+  master_sheet: null;
   name: string;
   transactions_id: string[];
   users_id: string[];
 }
+
+export interface PackagedRoom extends Partial<Room> {}
 
 // Transaction can be used in making History of a room
 // also make the balance sheet with user.length transaction objects.
@@ -50,13 +60,13 @@ export interface GlobalStore {
   user: User | null;
   userData: UserData | null;
   appbarTitle: string;
-  rooms: Room[];
+  masterSheet: MasterStatement | null;
   isAdmin: boolean;
 
   setIsAdmin: Action<GlobalStore, boolean>;
+  setMasterSheet: Action<GlobalStore, MasterStatement | null>;
   setUser: Action<GlobalStore, User | null>;
   setUserData: Action<GlobalStore, UserData | null>;
   setAppbarTitle: Action<GlobalStore, string>;
-  setRooms: Action<GlobalStore, Room[]>;
   resetStore: Action<GlobalStore>;
 }
