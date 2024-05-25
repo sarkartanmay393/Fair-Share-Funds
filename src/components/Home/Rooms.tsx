@@ -100,6 +100,19 @@ export const Rooms = () => {
           setUserData(payload.new as UserData);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "users",
+        },
+        (payload) => {
+          // if (payload.new.id)
+          console.log("delete", payload);
+          // setUserData(payload.new as UserData);
+        }
+      )
       .subscribe();
 
     return () => {

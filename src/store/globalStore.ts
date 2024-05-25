@@ -4,13 +4,13 @@ import { GlobalStore } from "../interfaces/index.ts";
 const globalStore: GlobalStore = {
   user: null,
   userData: null,
-  masterSheet: null,
+  // masterSheet: null,
   appbarTitle: "RoomPay",
   isAdmin: false,
 
-  setMasterSheet: action((state, payload) => {
-    state.masterSheet = payload;
-  }),
+  // setMasterSheet: action((state, payload) => {
+  //   state.masterSheet = payload;
+  // }),
   setUser: action((state, payload) => {
     state.user = payload;
     // console.log("state", state.user);
@@ -30,7 +30,7 @@ const globalStore: GlobalStore = {
     state.userData = null;
     state.isAdmin = false;
     state.appbarTitle = "RoomPay";
-    state.masterSheet = null;
+    // state.masterSheet = null;
   }),
 };
 

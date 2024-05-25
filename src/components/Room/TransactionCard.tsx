@@ -11,9 +11,7 @@ import { Transaction, UserData } from "../../interfaces/index.ts";
 
 import { Done, DoneAll, Close } from "@mui/icons-material";
 
-import { MasterStatement } from "@/utils/masterSheet.ts";
 import supabase from "@/utils/supabase/supabase.ts";
-import { useStoreState } from "@/store/typedHooks.ts";
 
 interface Props {
   fromUserData?: UserData;
@@ -22,47 +20,46 @@ interface Props {
 }
 
 const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
-  const pathname = window.location.pathname;
-  const roomId = pathname.split("/")[2];
+  // const pathname = window.location.pathname;
+  // const roomId = pathname.split("/")[2];
 
-  const { masterSheet } = useStoreState((state) => state);
   const [isLoading, setIsLoading] = useState(false);
 
-  const approveTrnx = async (transactionId: string) => {
+  const approveTransaction = async (transactionId: string) => {
     setIsLoading(true);
-    const json_ms = masterSheet?.toJson();
-    const ms = new MasterStatement(json_ms);
-    const fromUserDataStatement = ms.getStatement(transaction.from_user);
-    const toUserDataStatement = ms.getStatement(transaction.to_user);
 
-    const fus_tua =
-      Number(fromUserDataStatement.getAmount(transaction.to_user) ?? 0) +
-      transaction.amount;
-    fromUserDataStatement.setAmount(transaction.to_user, fus_tua + "");
+    const { data: statementData, error: statementError } = await supabase
+      .from("statements")
+      .select("amount")
+      .eq("roomId", transaction.room_id)
+      .in("between", [transaction.from_user, transaction.to_user])
+      .single();
 
-    const tus_fua =
-      Number(toUserDataStatement.getAmount(transaction.from_user) ?? 0) +
-      transaction.amount;
-    toUserDataStatement.setAmount(transaction.from_user, tus_fua + "");
-
-    const { error: e2 } = await supabase
-      .from("rooms")
-      .update({ master_sheet: ms.toJson() })
-      .eq("id", roomId);
-
-    if (e2) {
-      alert("Failed master sheet update");
+    if (statementError) {
+      console.log(statementError.message);
       setIsLoading(false);
       return;
     }
 
     const { error } = await supabase
+      .from("statements")
+      .update({ amount: statementData.amount + transaction.amount })
+      .eq("roomId", transaction.room_id)
+      .in("between", [transaction.from_user, transaction.to_user]);
+
+    if (error) {
+      console.log(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const { error: errorTransactionUpdate } = await supabase
       .from("transactions")
       .update({ approved: true })
       .eq("id", transactionId);
 
-    if (error) {
-      alert("Approval failed");
+    if (errorTransactionUpdate) {
+      console.log(errorTransactionUpdate.message);
       setIsLoading(false);
       return;
     }
@@ -152,7 +149,7 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
               alignItems: "center",
               bgcolor: "green",
             }}
-            onClick={() => approveTrnx(transaction.id)}
+            onClick={() => approveTransaction(transaction.id)}
           >
             {isLoading ? (
               <CircularProgress />

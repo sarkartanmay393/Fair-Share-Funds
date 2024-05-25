@@ -1,5 +1,4 @@
 import { Action } from "easy-peasy";
-import { MasterStatement } from "@/utils/masterSheet.ts";
 import { User } from "@supabase/supabase-js";
 
 export enum TransactionType {
@@ -52,19 +51,19 @@ export interface Message {
   created_at: string;
   from_user: string;
   id: string;
-  to_user: string;
   text: string;
+  roomId: string;
 }
 
 export interface GlobalStore {
   user: User | null;
   userData: UserData | null;
   appbarTitle: string;
-  masterSheet: MasterStatement | null;
+  // masterSheet: MasterStatement | null;
   isAdmin: boolean;
 
   setIsAdmin: Action<GlobalStore, boolean>;
-  setMasterSheet: Action<GlobalStore, MasterStatement | null>;
+  // setMasterSheet: Action<GlobalStore, MasterStatement | null>;
   setUser: Action<GlobalStore, User | null>;
   setUserData: Action<GlobalStore, UserData | null>;
   setAppbarTitle: Action<GlobalStore, string>;

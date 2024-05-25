@@ -152,14 +152,6 @@ export const AuthPage = () => {
     },
   });
 
-  // useEffect(() => {
-  //   if (success.spec === "login") {
-  // navigate("/");
-  //   }
-
-  // console.log(typeof loginFormik);
-  // }, [success]);
-
   return (
     <React.Fragment>
       {user && <Navigate to="/" />}

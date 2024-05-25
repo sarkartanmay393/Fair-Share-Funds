@@ -22,10 +22,13 @@ interface InputProps {
   styles?: SxProps<Theme>;
   usersId?: string[];
   roomUsers: UserData[];
-  roomData: Room;
+  roomData: Room | null;
 }
 
-export default function InputBar({ roomData, roomUsers }: InputProps) {
+export default function TransactionInputBar({
+  roomData,
+  roomUsers,
+}: InputProps) {
   const { user } = useStoreState((state) => state);
   const [, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -35,36 +38,46 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
     resetForm: any
   ) => {
     try {
+      if (!roomData) {
+        resetForm();
+        return;
+      }
+
       setLoading(true);
-      const { data, error } = await supabase
+      console.log("Sending Transactions");
+      const { data: newTransactionData, error } = await supabase
         .from("transactions")
         .insert(newTransaction)
         .select()
         .single();
 
       if (error) {
-        // setError(resp.error.message);
         throw error;
       }
 
-      const updatedTransactionIds = [...roomData.transactions_id, data.id];
+      const updatedTransactionIds = [
+        ...roomData.transactions_id,
+        newTransactionData.id,
+      ];
       console.log("Update Room Data");
 
-      const updateRoomResp = await supabase
+      const { error: updateRoomError } = await supabase
         .from("rooms")
         .update({
           transactions_id: updatedTransactionIds,
         })
         .eq("id", roomData.id);
 
-      if (updateRoomResp && updateRoomResp.error) {
-        throw updateRoomResp.error;
+      if (updateRoomError) {
+        throw updateRoomError;
       }
 
       console.log("Updated Room Data!");
+      console.log("Sent Transactions");
       setLoading(false);
       resetForm();
     } catch (e) {
+      console.log("Failed to send Transactions");
       setLoading(false);
       console.log(e);
       setError(String(e));
@@ -81,10 +94,16 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
     onSubmit: (values, { setSubmitting, resetForm }) => {
       setTimeout(() => {
         setError("");
-        if (values.toUser === user?.id) {
+        // if (values.toUser === user?.id) {
+        //   resetForm();
+        //   return;
+        // }
+
+        if (!roomData) {
           resetForm();
           return;
         }
+
         const newTransaction = {
           amount: Number(values.amount),
           from_user: user?.id,
@@ -106,6 +125,7 @@ export default function InputBar({ roomData, roomUsers }: InputProps) {
 
   return (
     <Box
+      id="trxnInput"
       component="form"
       position="fixed"
       bottom={10}

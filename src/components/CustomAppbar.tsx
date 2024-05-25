@@ -57,8 +57,37 @@ export default function CustomAppbar() {
   const handleDeleteRoom = async () => {
     setDeletingLoading(true);
     try {
-      await supabase.from("rooms").delete().eq("id", roomId);
-      navigate("/");
+      await supabase.from("transactions").delete().eq("room_id", roomId);
+      await supabase.from("statements").delete().eq("roomId", roomId);
+      const { data: roomToBeDeleted } = await supabase
+        .from("rooms")
+        .select()
+        .eq("id", roomId)
+        .single();
+
+      if (roomToBeDeleted) {
+        roomToBeDeleted.users_id.forEach(async (userId: string) => {
+          const { data: currentUser } = await supabase
+            .from("users")
+            .select()
+            .eq("id", userId)
+            .single();
+
+          await supabase
+            .from("users")
+            .update({
+              rooms_id: currentUser.rooms_id.filter(
+                (id: string) => id !== roomId
+              ),
+            })
+            .eq("id", userId);
+        });
+
+        await supabase.from("rooms").delete().eq("id", roomId);
+        navigate("/");
+      } else {
+        throw new Error("Current Room not found!");
+      }
     } catch (error) {
       console.log(error);
     } finally {

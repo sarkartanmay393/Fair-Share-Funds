@@ -1,24 +1,30 @@
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, LinearProgress } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import InputBar from "../components/Room/Input.tsx";
+import TransactionInputBar from "../components/Room/TransactionInput.tsx";
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 import TransactionsHistory from "../components/Room/TransactionsHistory.tsx";
 import RoomStatement from "../components/Room/RoomStatement.tsx";
-import { Room, Transaction, UserData } from "@/interfaces/index.ts";
+import {
+  Message,
+  Room,
+  Statement,
+  Transaction,
+  UserData,
+} from "@/interfaces/index.ts";
 import supabase from "@/utils/supabase/supabase.ts";
-import { MasterStatement, Statement } from "@/utils/masterSheet.ts";
 
 export default function RoomPage() {
   const { id } = useParams() as { id: string };
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [roomUsers, setRoomUsers] = useState<UserData[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [roomUserIds, setRoomUserIds] = useState<string[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
-  // const [roomStatement, setRoomStatement] = useState<Statement | null>(null);
+  const [masterStatement, setMasterStatement] = useState<Statement[]>([]);
 
   const { user } = useStoreState((state) => state);
   const { setAppbarTitle, setIsAdmin } = useStoreActions((actions) => actions);
@@ -48,6 +54,7 @@ export default function RoomPage() {
         setAppbarTitle(data.name || "Room ~");
         setLoading(false);
       } catch (err) {
+        navigate("/");
         setLoading(false);
         console.log(err);
       }
@@ -74,7 +81,6 @@ export default function RoomPage() {
         console.log("Loaded Room Users: " + data?.length);
 
         setRoomUsers((data as UserData[]) ?? []);
-        setLoading(false);
       } catch (e) {
         console.log(e);
         setLoading(false);
@@ -92,7 +98,6 @@ export default function RoomPage() {
       if (currentRoom) {
         console.log("Fetching Transactions...");
         try {
-          setLoading(true);
           const { data, error } = await supabase
             .from("transactions")
             .select()
@@ -117,6 +122,59 @@ export default function RoomPage() {
   }, [currentRoom, transactions.length]);
 
   useEffect(() => {
+    const fetchMessages = async () => {
+      if (currentRoom) {
+        console.log("Fetching Messages...");
+        try {
+          // setLoading(true);
+          const { data, error } = await supabase
+            .from("messages")
+            .select()
+            .eq("roomId", currentRoom.id)
+            .order("created_at", { ascending: false });
+
+          if (error) {
+            throw error;
+          }
+          setMessages(data as Message[]);
+          setLoading(false);
+        } catch (e) {
+          console.log(e);
+          // setLoading(false);
+        }
+      }
+    };
+
+    if (!messages.length) {
+      fetchMessages();
+    }
+  }, [currentRoom, messages.length]);
+
+  useEffect(() => {
+    const loadAllStatements = async () => {
+      const { data: listOfUserStatement, error: listOfUserStatementError } =
+        await supabase
+          .from("statements")
+          .select()
+          .eq("roomId", id)
+          .in("between", [user?.id]);
+
+      if (listOfUserStatementError) {
+        console.log(listOfUserStatementError.message);
+        return;
+      }
+
+      if (listOfUserStatement.length) {
+        setMasterStatement(listOfUserStatement);
+      }
+    };
+
+    if (currentRoom) {
+      loadAllStatements();
+    }
+  }, [currentRoom, id, user?.id]);
+
+  useEffect(() => {
     const currentRoomChannel = supabase
       .channel(`room ch ${currentRoom?.id ?? id}`)
       .on(
@@ -125,13 +183,10 @@ export default function RoomPage() {
         (payload) => {
           console.log(`UPDATE current room`);
           const nr = payload.new;
-          // const masterStatement = new MasterStatement(nr.master_sheet);
           setCurrentRoom({
             ...nr,
-            // master_s.heet: masterStatement,
           } as Room);
           setRoomUserIds(nr.users_id);
-          // setRoomStatement(masterStatement.getStatement(user?.id ?? ""));
         }
       )
       .on(
@@ -160,6 +215,15 @@ export default function RoomPage() {
           setTransactions((p) => [t, ...p]);
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const t = payload.new as Message;
+          console.log(`INSERT message`, payload);
+          setMessages((p) => [t, ...p]);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -182,21 +246,16 @@ export default function RoomPage() {
         </Box>
       ) : (
         <>
-          <RoomStatement roomUsers={roomUsers} />
-          {currentRoom ? (
-            <TransactionsHistory
-              roomUsers={roomUsers}
-              transactions={transactions}
-            />
-          ) : (
-            <CircularProgress />
+          {loading ? null : (
+            <RoomStatement roomUsers={roomUsers} statements={masterStatement} />
           )}
+          <TransactionsHistory
+            roomUsers={roomUsers}
+            transactions={transactions}
+            messages={messages}
+          />
+          <TransactionInputBar roomData={currentRoom} roomUsers={roomUsers} />
         </>
-      )}
-      {currentRoom ? (
-        <InputBar roomData={currentRoom} roomUsers={roomUsers} />
-      ) : (
-        <LinearProgress />
       )}
     </Box>
   );

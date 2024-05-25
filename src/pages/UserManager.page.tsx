@@ -12,12 +12,11 @@ import {
 } from "@mui/material";
 
 import { useState } from "react";
-import { Room, UserData } from "../interfaces/index.ts";
+import { Room, Statement, UserData } from "../interfaces/index.ts";
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 import { useEffect } from "react";
 import { RemoveCircleOutline } from "@mui/icons-material";
 import AddUserInput from "@/components/Manage/AddUserInput.tsx";
-import { Statement } from "@/utils/masterSheet.ts";
 import supabase from "@/utils/supabase/supabase.ts";
 
 const styles = {
@@ -36,7 +35,7 @@ export default function RoomUserManager() {
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
 
-  const { user, rooms } = useStoreState((state) => state);
+  const { user } = useStoreState((state) => state);
   const { setAppbarTitle } = useStoreActions((actions) => actions);
 
   const [willBeDeleted, setWillBeDeleted] = useState("");
@@ -49,36 +48,62 @@ export default function RoomUserManager() {
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    const cr = rooms.find((r) => r.id === roomId);
-    if (cr) {
-      setCurrentRoom(cr);
-      setAppbarTitle(cr.name || "FSF Room Manager");
-      const getUserDetails = async () => {
-        console.log("Fetch User Details ManagePage");
+    const fetchCurrentRoom = async () => {
+      console.log("Fetching Current Room");
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("rooms")
+          .select()
+          .eq("id", roomId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        console.log("Loaded Current Room " + data?.name);
+        setCurrentRoom(data as Room);
+        setAppbarTitle(data.name || "RoomPay");
+      } catch (err) {
+        setLoading(false);
+        console.log(err);
+      }
+    };
+
+    if (!currentRoom) {
+      fetchCurrentRoom();
+    }
+  }, [roomId]);
+
+  useEffect(() => {
+    const fetchCurrentRoomUsers = async (usersId: string[]) => {
+      console.log("Fetch Room Users: " + usersId.length);
+      try {
         const { data, error } = await supabase
           .from("users")
-          .select(`*`)
-          .in("id", cr.users_id);
+          .select()
+          .in("id", usersId);
 
         if (error) {
           console.log(error.message);
-          setLoading(false);
-          return;
         }
 
-        console.log("Loaded User Details ManagePage");
+        console.log("Loaded Room Users: " + data?.length);
+
+        setRoomUsers((data as UserData[]) ?? []);
         setLoading(false);
-        setRoomUsers(data);
-      };
+      } catch (e) {
+        console.log(e);
+        setLoading(false);
+      }
+    };
 
-      getUserDetails();
-
-      return () => {
-        setAppbarTitle("Fair Share Funds");
-      };
+    if (currentRoom?.users_id.length && !roomUsers.length) {
+      console.log("Fetch with " + currentRoom?.users_id.length);
+      fetchCurrentRoomUsers(currentRoom?.users_id);
     }
-  }, []);
+  }, [currentRoom, roomUsers.length]);
 
   const handleAddNewUser = async () => {
     setAddButtonLoading(true);
@@ -102,50 +127,55 @@ export default function RoomUserManager() {
         return;
       }
 
-      if (currentRoom.users_id.indexOf(resp.data.id) !== -1) {
+      if (currentRoom.users_id.indexOf(resp.data.id ?? "") !== -1) {
         window.alert(`User already in the room!`);
         setAddButtonLoading(false);
         return;
       }
 
-      // currently adding user will have newStatement
-      const currentStatement = currentRoom.master_sheet.getStatement(
-        user?.id ?? ""
-      );
-      if (currentStatement) {
-        const newStatement = currentStatement.toJson();
-        const newUserStatement = new Statement(newStatement);
-        newUserStatement.setAmount(user?.id ?? "", "0");
-        currentRoom.master_sheet.setStatement(resp.data.id, newUserStatement);
-      }
+      const statements = [] as Partial<Statement>[];
 
-      roomUsers.forEach((u) => {
-        let tmp = currentRoom.master_sheet.getStatement(u.id);
-        if (!tmp) tmp = new Statement();
-        tmp.setAmount(resp.data.id, "0");
-        currentRoom.master_sheet.setStatement(u.id, tmp);
+      currentRoom.users_id.map((userId) => {
+        statements.push({
+          amount: 0,
+          roomId: currentRoom.id,
+          between: [resp.data.id, userId],
+        } as Partial<Statement>);
       });
+
+      const resp2 = await supabase.from("statements").insert(statements);
+
+      if (resp2.error) {
+        console.log(resp2.error.message);
+        setAddButtonLoading(false);
+        return;
+      }
 
       const { error } = await supabase
         .from("users")
         .update({ rooms_id: [...resp.data.rooms_id, roomId] })
         .eq("id", resp.data.id);
+
       if (error) {
-        // alert(error.message);
+        console.log(error.message);
         setAddButtonLoading(false);
         return;
       }
 
-      await supabase
+      const resp3 = await supabase
         .from("rooms")
         .update({
-          users_id: [...currentRoom.users_id, resp?.data.id],
-          master_sheet: currentRoom.master_sheet.toJson(),
+          users_id: [...currentRoom.users_id, resp.data.id],
         })
         .eq(`id`, roomId);
-      // alert(error.message);
 
-      setRoomUsers((pr) => [...pr, resp.data as UserData]);
+      if (resp3.error) {
+        console.log(resp3.error.message);
+        setAddButtonLoading(false);
+        return;
+      }
+
+      setRoomUsers((pr) => [resp.data as UserData, ...pr]);
       setAddButtonLoading(false);
       setSearchInfo("");
     };
@@ -153,43 +183,52 @@ export default function RoomUserManager() {
     await handleSupabaseOperations();
   };
 
-  const handleRemoveUser = (user: UserData) => {
+  const handleRemoveUser = async (user: UserData) => {
     setWillBeDeleted(user.id);
     setDeleteButtonLoading(true);
 
     const handleSupabaseOperations = async () => {
-      if (!currentRoom?.master_sheet) return;
-      roomUsers?.forEach((u) => {
-        let tmp = currentRoom?.master_sheet.getStatement(u.id);
-        if (!tmp) tmp = new Statement();
-        tmp.removeEntry(user.id);
-      });
-      currentRoom.master_sheet.removeStatement(user.id);
+      if (!currentRoom) return;
 
-      const updateRoomsId = user.rooms_id?.filter((id) => id !== roomId);
+      const updateRoomsId = user.rooms_id.filter((id) => id !== roomId);
       const resp = await supabase
-        ?.from("users")
+        .from("users")
         .update({ rooms_id: updateRoomsId })
         .eq("id", user.id);
-      if (resp && resp.error) {
-        // alert(resp.error);
+
+      if (resp.error) {
+        console.log(resp.error.message);
         setWillBeDeleted("");
         setDeleteButtonLoading(false);
         return;
       }
 
-      const updateUsersId = currentRoom?.users_id.filter(
+      const { error } = await supabase
+        .from("statements")
+        .delete()
+        .eq("roomId", currentRoom.id)
+        .in("between", [user.id]);
+
+      if (error) {
+        console.log(error.message);
+        setWillBeDeleted("");
+        setDeleteButtonLoading(false);
+        return;
+      }
+
+      const updatedRoomUsersId = currentRoom.users_id.filter(
         (id) => id !== user.id
       );
+
       const resp2 = await supabase
-        ?.from("rooms")
+        .from("rooms")
         .update({
-          users_id: updateUsersId,
-          master_sheet: currentRoom.master_sheet.toJson(),
+          users_id: updatedRoomUsersId,
         })
         .eq("id", roomId);
-      if (resp2 && resp2.error) {
-        // alert(resp2.error);
+
+      if (resp2.error) {
+        console.log(resp2.error.message);
         setWillBeDeleted("");
         setDeleteButtonLoading(false);
         return;
@@ -199,10 +238,7 @@ export default function RoomUserManager() {
       setDeleteButtonLoading(false);
     };
 
-    handleSupabaseOperations().then(() => {
-      setWillBeDeleted("");
-      setDeleteButtonLoading(false);
-    });
+    await handleSupabaseOperations();
   };
 
   if (currentRoom) {

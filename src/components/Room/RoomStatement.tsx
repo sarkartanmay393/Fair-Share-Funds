@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -9,53 +8,18 @@ import {
   Typography,
 } from "@mui/material";
 import { KeyboardArrowDown } from "@mui/icons-material";
-import { useStoreState } from "@/store/typedHooks";
+// import { useStoreState } from "@/store/typedHooks";
 import { Statement, UserData } from "@/interfaces";
-import supabase from "@/utils/supabase/supabase";
 
 interface RoomStatementProps {
   roomUsers: UserData[];
+  statements: Statement[];
 }
 
-const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
-  const pathname = window.location.pathname;
-  const roomId = pathname.split("/")[2];
-
-  const { user } = useStoreState((state) => state);
-  const [statements, setStatements] = useState<Statement[]>([]);
-
-  const fetchRoomByUserIdAndRoomId = async (userId: string, roomId: string) => {
-    const { data, error } = await supabase
-      .from("statements")
-      .select()
-      .eq("roomId", roomId)
-      .contains("users", [userId])
-      .single();
-
-    if (error) {
-      console.error("Error fetching room:", error);
-      return null;
-    }
-
-    return data as Statement;
-  };
-
-  useEffect(() => {
-    const loadAllStatements = async () => {
-      const temp = roomUsers.map(async (user) => {
-        return await fetchRoomByUserIdAndRoomId(user.id, roomId);
-      });
-      const allStatements = await Promise.all(temp);
-      const cleaned: Statement[] = [];
-      allStatements.forEach((s) => {
-        if (s) cleaned.push(s);
-      });
-      setStatements(cleaned);
-    };
-    if (!statements.length) {
-      loadAllStatements();
-    }
-  }, [roomUsers]);
+const RoomStatement = ({ roomUsers, statements }: RoomStatementProps) => {
+  // const pathname = window.location.pathname;
+  // const roomId = pathname.split("/")[2];
+  // const { user } = useStoreState((state) => state);
 
   return (
     <Card
@@ -79,62 +43,56 @@ const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
         </AccordionSummary>
         <AccordionDetails>
           {statements.length > 0 ? (
-              roomUsers.map((u, index) => {
-                const name = u.name;
-                const amount = Number(statement?.getAmount(u.id) || 0);
-                if (u.id === user?.id) {
-                  return <React.Fragment key={index}></React.Fragment>;
-                }
-                return (
+            statements.map((s, index) => {
+              const statementSpecificUser = roomUsers.find((ru) =>
+                s.users.includes(ru.id)
+              );
+
+              if (!statementSpecificUser) {
+                return <></>;
+              }
+
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                  }}
+                >
                   <Box
-                    key={index}
                     sx={{
+                      width: "100%",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
+                      justifyContent: "space-between",
+                      paddingX: "15px",
+                      paddingY: "10px",
+                      border: "px solid red",
+                      borderRadius: "8px",
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        paddingX: "15px",
-                        paddingY: "10px",
-                        border: "px solid red",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <Box sx={{ display: "flex", gap: "20px" }}>
-                        <Box sx={{}}>
-                          <Avatar>{name.charAt(0).toUpperCase()}</Avatar>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Typography sx={{ fontSize: "15px" }}>
-                            {name}
-                          </Typography>
-                        </Box>
+                    <Box sx={{ display: "flex", gap: "20px" }}>
+                      <Box sx={{}}>
+                        <Avatar>
+                          {statementSpecificUser.name.charAt(0).toUpperCase()}
+                        </Avatar>
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography
-                          sx={{ fontSize: "15px", fontWeight: "600" }}
-                        >
-                          Rs. {amount}
+                        <Typography sx={{ fontSize: "15px" }}>
+                          {statementSpecificUser.name}
                         </Typography>
                       </Box>
                     </Box>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Typography sx={{ fontSize: "15px", fontWeight: "600" }}>
+                        Rs. {s.amount}
+                      </Typography>
+                    </Box>
                   </Box>
-                );
-              })
-            ) : (
-              <Typography
-                textAlign="center"
-                variant="body1"
-                sx={{ opacity: 0.7 }}
-              >
-                No users in the room
-              </Typography>
-            )
+                </Box>
+              );
+            })
           ) : (
             <Typography>No room statement found</Typography>
           )}
