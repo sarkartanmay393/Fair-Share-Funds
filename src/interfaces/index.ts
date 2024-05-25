@@ -19,7 +19,7 @@ export interface Statement {
   id: string;
   amount: number;
   roomId: string;
-  users: string[];
+  between: string[];
 }
 
 export interface Room {

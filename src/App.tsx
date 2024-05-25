@@ -11,7 +11,7 @@ import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
 import { useEffect, useState } from "react";
 import supabase from "./utils/supabase/supabase.ts";
 import { UserData } from "./interfaces/index.ts";
-import { CircularProgress } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 // import { useEffect } from "react";
 
 function App() {
@@ -66,7 +66,15 @@ function App() {
     <BrowserRouter>
       <Layout>
         {loading ? (
-          <CircularProgress />
+          <Box
+            height="100%"
+            width="100%"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <CircularProgress color="info" />
+          </Box>
         ) : (
           <>
             {!user && !userData && <Navigate to="/auth" />}

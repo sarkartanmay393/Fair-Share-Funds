@@ -59,31 +59,50 @@ export default function CustomAppbar() {
     try {
       await supabase.from("transactions").delete().eq("room_id", roomId);
       await supabase.from("statements").delete().eq("roomId", roomId);
-      const { data: roomToBeDeleted } = await supabase
+      const { data: roomToBeDeleted, error: roomError } = await supabase
         .from("rooms")
         .select()
         .eq("id", roomId)
         .single();
 
-      if (roomToBeDeleted) {
-        roomToBeDeleted.users_id.forEach(async (userId: string) => {
-          const { data: currentUser } = await supabase
-            .from("users")
-            .select()
-            .eq("id", userId)
-            .single();
+      if (roomError) throw roomError;
 
-          await supabase
-            .from("users")
-            .update({
-              rooms_id: currentUser.rooms_id.filter(
-                (id: string) => id !== roomId
-              ),
-            })
-            .eq("id", userId);
+      if (roomToBeDeleted) {
+        const promises = roomToBeDeleted.users_id.map(
+          async (userId: string) => {
+            const { data: currentUser } = await supabase
+              .from("users")
+              .select()
+              .eq("id", userId)
+              .single();
+
+            const updatedRoomIds = currentUser.rooms_id.filter(
+              (id: string) => id !== roomToBeDeleted.id
+            );
+
+            const { error: updateUserError } = await supabase
+              .from("users")
+              .update({
+                rooms_id: updatedRoomIds,
+              })
+              .eq("id", userId);
+
+            if (updateUserError) {
+              throw updateUserError;
+            }
+          }
+        );
+
+        await Promise.all(promises);
+        await supabase.from("rooms").delete().eq("id", roomId);
+
+        console.log("sending broadcast delete room");
+        await supabase.channel(`room delete ch`).send({
+          type: "broadcast",
+          event: "room-delete",
+          payload: { id: roomToBeDeleted.id },
         });
 
-        await supabase.from("rooms").delete().eq("id", roomId);
         navigate("/");
       } else {
         throw new Error("Current Room not found!");

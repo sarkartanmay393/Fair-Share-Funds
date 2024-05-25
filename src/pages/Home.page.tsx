@@ -41,6 +41,13 @@ export default function Homepage() {
         throw error;
       }
 
+      console.log("sending broadcast new room to self");
+      await supabase.channel(`${user.id} selfch`).send({
+        type: "broadcast",
+        event: "new-room-creation",
+        payload: { ...data },
+      });
+
       let roomsOfCurrentUser = userData?.rooms_id;
       if (roomsOfCurrentUser) {
         roomsOfCurrentUser.push(data.id);
@@ -54,7 +61,7 @@ export default function Homepage() {
           rooms_id: roomsOfCurrentUser,
         })
         .eq("id", user.id);
-      
+
       if (errorUserUpdate) {
         throw errorUserUpdate;
       }

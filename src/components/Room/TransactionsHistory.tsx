@@ -1,22 +1,27 @@
-import { Avatar, Box, Card, List, ListItem, Typography } from "@mui/material";
+import { Box, List, ListItem, Typography } from "@mui/material";
 
-import { Message, Transaction, UserData } from "../../interfaces/index.ts";
+import { Transaction, UserData } from "../../interfaces/index.ts";
 import TransactionCard from "./TransactionCard.tsx";
 import { useEffect, useRef, useState } from "react";
 import { useStoreState } from "@/store/typedHooks.ts";
+import supabase from "@/utils/supabase/supabase.ts";
 
 interface Props {
   roomUsers: UserData[];
-  transactions: Transaction[];
-  messages: Message[];
+  // messages: Message[];
+  // transactionIds: string[];
 }
 
-const TransactionsHistory = ({ roomUsers, transactions, messages }: Props) => {
+const TransactionsHistory = ({ roomUsers }: Props) => {
   const transactionsBoxRef = useRef<HTMLElement>();
+  const pathname = window.location.pathname;
+  const roomId = pathname.split("/")[2];
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(false);
   // const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const { user } = useStoreState((state) => state);
-  const [data, setData] = useState<(Message | Transaction)[]>([]);
+  // const [data, setData] = useState<(Message | Transaction)[]>([]);
 
   // useEffect(() => {
   //   const container = trnxBoxy.current;
@@ -27,15 +32,65 @@ const TransactionsHistory = ({ roomUsers, transactions, messages }: Props) => {
   //   console.log(window.scrollX);
   // }, []);
 
-  useEffect(() => {
-    const list = [...messages, ...transactions] as (Message | Transaction)[];
-    list.sort((a, b) => {
-      const da = new Date(a.created_at).getTime();
-      const db = new Date(b.created_at).getTime();
-      return da - db;
-    });
+  // useEffect(() => {
+  //   const list = [...messages, ...transactions] as (Message | Transaction)[];
+  //   list.sort((a, b) => {
+  //     const da = new Date(a.created_at).getTime();
+  //     const db = new Date(b.created_at).getTime();
+  //     return da - db;
+  //   });
 
-    setData(list);
+  //   setData(list);
+  // }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      console.log("Fetching Transactions...");
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("transactions")
+          .select()
+          .eq("room_id", roomId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+        console.log("Fetched Transactions...");
+        setTransactions(data as Transaction[]);
+        setLoading(false);
+      } catch (e) {
+        console.log("Failed fetching transactions...", e);
+        console.log(e);
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    const subscribe = supabase
+      .channel(`${roomId}`)
+      .on("broadcast", { event: "incoming-transaction" }, ({ payload }) => {
+        console.log(" received!", payload);
+        setTransactions((p) => [payload, ...p]);
+      })
+      .on("broadcast", { event: "approving-transaction" }, ({ payload }) => {
+        console.log(" received!", payload);
+        setTransactions((p) =>
+          p.map((t) => ({
+            ...t,
+            approved: payload.id == t.id ? true : t.approved,
+          }))
+        );
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscribe);
+    };
   }, []);
 
   return (
@@ -49,23 +104,34 @@ const TransactionsHistory = ({ roomUsers, transactions, messages }: Props) => {
       // paddingBottom={2}
       // overflow="clip"
     >
-      <List
-        dense
-        sx={{
-          // border: '1px solid red',
-          display: "flex",
-          // flexDirection: "column",
-          // justifyContent: "end",
-          height: "100%",
-          // pt: "62px",
-          // pb: { xs: "68px", md: "74px" },
-          overflowY: "scroll",
-          flexDirection: "column-reverse",
-        }}
-      >
-        {data.length > 0 ? (
-          data.map((transaction) => {
-            if ("to_user" in transaction) {
+      {loading ? (
+        <Box
+          height="100%"
+          width="100%"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <pre>Please wait a while...</pre>
+        </Box>
+      ) : (
+        <List
+          dense
+          sx={{
+            // border: '1px solid red',
+            display: "flex",
+            // flexDirection: "column",
+            // justifyContent: "end",
+            height: "100%",
+            // pt: "62px",
+            // pb: { xs: "68px", md: "74px" },
+            overflowY: "scroll",
+            flexDirection: "column-reverse",
+          }}
+        >
+          {transactions.length > 0 ? (
+            transactions.map((transaction) => {
+              // if ("to_user" in transaction) {
               const fromUser = roomUsers.find(
                 (u) => u.id === transaction.from_user
               );
@@ -87,75 +153,76 @@ const TransactionsHistory = ({ roomUsers, transactions, messages }: Props) => {
                   />
                 </ListItem>
               );
-            } else {
-              const fromUser = roomUsers.find(
-                (u) => u.id === transaction.from_user
-              );
+              // } else {
+              //   const fromUser = roomUsers.find(
+              //     (u) => u.id === transaction.from_user
+              //   );
 
-              return (
-                <ListItem
-                  key={transaction.id.slice(0, 3)}
-                  sx={{
-                    width: "100%",
-                    border: "px solid red",
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Card
-                    sx={{
-                      // mb: "6px",
-                      width: "95%",
-                      // mx: '2rem',
-                      height: "64px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      bgcolor: "background.default",
-                      borderRadius: "8px",
-                      paddingX: "15px",
-                    }}
-                  >
-                    <Box
-                      sx={{ display: "flex", gap: "18px" }}
-                      border="px solid red"
-                    >
-                      <Avatar>
-                        {(fromUser?.name ?? "Noname").trim().charAt(0)}
-                      </Avatar>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                        }}
-                      >
-                        <Typography sx={{ fontSize: "12px" }}>
-                          {transaction.text}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                </ListItem>
-              );
-            }
-          })
-        ) : (
-          <Box
-            sx={{
-              height: "100%",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Typography sx={{ color: "GrayText" }}>
-              {" "}
-              No transactions done yet 🙅🏽‍♂️
-            </Typography>
-          </Box>
-        )}
-      </List>
+              //   return (
+              //     <ListItem
+              //       key={transaction.id.slice(0, 3)}
+              //       sx={{
+              //         width: "100%",
+              //         border: "px solid red",
+              //         display: "flex",
+              //         justifyContent: "center",
+              //       }}
+              //     >
+              //       <Card
+              //         sx={{
+              //           // mb: "6px",
+              //           width: "95%",
+              //           // mx: '2rem',
+              //           height: "64px",
+              //           display: "flex",
+              //           justifyContent: "space-between",
+              //           alignItems: "center",
+              //           bgcolor: "background.default",
+              //           borderRadius: "8px",
+              //           paddingX: "15px",
+              //         }}
+              //       >
+              //         <Box
+              //           sx={{ display: "flex", gap: "18px" }}
+              //           border="px solid red"
+              //         >
+              //           <Avatar>
+              //             {(fromUser?.name ?? "Noname").trim().charAt(0)}
+              //           </Avatar>
+              //           <Box
+              //             sx={{
+              //               display: "flex",
+              //               flexDirection: "column",
+              //             }}
+              //           >
+              //             <Typography sx={{ fontSize: "12px" }}>
+              //               {transaction.text}
+              //             </Typography>
+              //           </Box>
+              //         </Box>
+              //       </Card>
+              //     </ListItem>
+              //   );
+              // }
+            })
+          ) : (
+            <Box
+              sx={{
+                height: "100%",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Typography sx={{ color: "GrayText" }}>
+                {" "}
+                No transactions done yet 🙅🏽‍♂️
+              </Typography>
+            </Box>
+          )}
+        </List>
+      )}
     </Box>
   );
 };

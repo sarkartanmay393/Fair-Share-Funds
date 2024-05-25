@@ -167,7 +167,9 @@ export default function RoomUserManager() {
         .update({
           users_id: [...currentRoom.users_id, resp.data.id],
         })
-        .eq(`id`, roomId);
+        .eq(`id`, roomId)
+        .select()
+        .single();
 
       if (resp3.error) {
         console.log(resp3.error.message);
@@ -176,6 +178,14 @@ export default function RoomUserManager() {
       }
 
       setRoomUsers((pr) => [resp.data as UserData, ...pr]);
+
+      console.log("sending broadcast add user to room");
+      await supabase.channel(`room ch`).send({
+        type: "broadcast",
+        event: "room-add",
+        payload: { clientId: resp.data.id, room: resp3.data },
+      });
+
       setAddButtonLoading(false);
       setSearchInfo("");
     };
@@ -207,7 +217,7 @@ export default function RoomUserManager() {
         .from("statements")
         .delete()
         .eq("roomId", currentRoom.id)
-        .in("between", [user.id]);
+        .contains("between", [user.id]);
 
       if (error) {
         console.log(error.message);
@@ -233,6 +243,16 @@ export default function RoomUserManager() {
         setDeleteButtonLoading(false);
         return;
       }
+
+      console.log("sending broadcast remove user to room");
+      await supabase.channel(`room ch`).send({
+        type: "broadcast",
+        event: "room-remove",
+        payload: { clientId: user.id, roomId: roomId },
+      });
+
+      const exisitngRoomUser = roomUsers.filter(ru => ru.id !== user.id);
+      setRoomUsers(exisitngRoomUser);
 
       setWillBeDeleted("");
       setDeleteButtonLoading(false);

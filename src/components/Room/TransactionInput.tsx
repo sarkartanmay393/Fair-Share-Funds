@@ -22,7 +22,7 @@ interface InputProps {
   styles?: SxProps<Theme>;
   usersId?: string[];
   roomUsers: UserData[];
-  roomData: Room | null;
+  roomData: Room;
 }
 
 export default function TransactionInputBar({
@@ -37,6 +37,9 @@ export default function TransactionInputBar({
     newTransaction: Transaction,
     resetForm: any
   ) => {
+    // Generating (because a transaction is powerful, it must get generated on client side not supabase)
+    const newTransactionId = crypto.randomUUID();
+
     try {
       if (!roomData) {
         resetForm();
@@ -45,9 +48,10 @@ export default function TransactionInputBar({
 
       setLoading(true);
       console.log("Sending Transactions");
+
       const { data: newTransactionData, error } = await supabase
         .from("transactions")
-        .insert(newTransaction)
+        .insert({ ...newTransaction, id: newTransactionId })
         .select()
         .single();
 
@@ -55,12 +59,19 @@ export default function TransactionInputBar({
         throw error;
       }
 
+      console.log("sending broadcast");
+      await supabase.channel(`${roomData.id}`).send({
+        type: "broadcast",
+        event: "incoming-transaction",
+        payload: { ...newTransactionData },
+      });
+
       const updatedTransactionIds = [
         ...roomData.transactions_id,
-        newTransactionData.id,
+        newTransaction.id,
       ];
-      console.log("Update Room Data");
 
+      console.log("Updating Room Data");
       const { error: updateRoomError } = await supabase
         .from("rooms")
         .update({
@@ -77,6 +88,24 @@ export default function TransactionInputBar({
       setLoading(false);
       resetForm();
     } catch (e) {
+      console.error("Transaction failed", e);
+
+      // Rollback logic (manual handling)
+      // Delete the new transaction
+      await supabase.from("transactions").delete().eq("id", newTransactionId);
+
+      // Rollback room data update if necessary
+      const { error: rollbackError } = await supabase
+        .from("rooms")
+        .update({ transactions_id: roomData.transactions_id })
+        .eq("id", roomData.id);
+
+      if (rollbackError) {
+        console.error("Rollback failed", rollbackError);
+      } else {
+        console.log("Rollback succeeded");
+      }
+
       console.log("Failed to send Transactions");
       setLoading(false);
       console.log(e);
@@ -85,43 +114,58 @@ export default function TransactionInputBar({
   };
 
   const useTransactionInputFormik = useFormik({
-    initialValues: { toUser: "self", transactionType: "Pay", amount: "" },
+    initialValues: {
+      toUser: "",
+      transactionType: "Pay",
+      amount: "",
+    },
     validationSchema: Yup.object().shape({
       toUser: Yup.string().min(8).required(),
       amount: Yup.number().moreThan(0, "amount must > 0"),
     }),
     // enableReinitialize: true,
     onSubmit: (values, { setSubmitting, resetForm }) => {
-      setTimeout(() => {
-        setError("");
-        // if (values.toUser === user?.id) {
-        //   resetForm();
-        //   return;
-        // }
+      setError("");
+      // if (values.toUser === user?.id) {
+      //   resetForm();
+      //   return;
+      // }
 
-        if (!roomData) {
-          resetForm();
-          return;
-        }
+      if (!roomData) {
+        console.log("not roomData");
+        resetForm();
+        return;
+      }
 
-        const newTransaction = {
-          amount: Number(values.amount),
-          from_user: user?.id,
-          room_id: roomData.id,
-          to_user: values.toUser,
-          type: values.transactionType,
-          approved: false,
-        } as Transaction;
+      const newTransaction = {
+        amount: Number(values.amount),
+        from_user: user?.id,
+        room_id: roomData.id,
+        to_user: values.toUser,
+        type: values.transactionType,
+        approved: false,
+      } as Transaction;
 
-        if (newTransaction.type === "Due") {
-          newTransaction.amount = -newTransaction.amount;
-        }
+      if (newTransaction.type === "Due") {
+        newTransaction.amount = -newTransaction.amount;
+      }
 
-        sendTransaction(newTransaction, resetForm);
-        setSubmitting(false);
-      }, 0);
+      console.log("sending");
+      sendTransaction(newTransaction, resetForm);
+      setSubmitting(false);
     },
   });
+
+  React.useEffect(() => {
+    if (!useTransactionInputFormik.values.toUser.length) {
+      if (roomUsers.length > 1) {
+        const anyOtherUser = roomUsers.find((ru) => ru.id !== user?.id);
+        useTransactionInputFormik.setValues((p) => {
+          return { ...p, toUser: anyOtherUser?.id ?? roomUsers[0].id };
+        });
+      }
+    }
+  }, [roomUsers, useTransactionInputFormik.values.toUser]);
 
   return (
     <Box
@@ -156,33 +200,21 @@ export default function TransactionInputBar({
           sx={{ mr: { xs: 0.5, md: 2 } }}
         >
           {roomUsers &&
-            roomUsers.map(
-              (ru) =>
-                ru.id !== user?.id && (
-                  <MenuItem
-                    sx={{ border: 0 }}
-                    key={ru.id.slice(0, 3)}
-                    value={ru.id === user?.id ? "self" : ru.id!}
-                  >
-                    <Avatar>
-                      <Typography color="white">
-                        {ru.id === user?.id
-                          ? "-"
-                          : ru.name &&
-                            `${ru.name.split(" ").at(0)?.at(0)}${ru.name
-                              .split(" ")
-                              .at(1)
-                              ?.at(0)}`}
-                      </Typography>
-                    </Avatar>
-                  </MenuItem>
-                )
+            roomUsers.map((ru) =>
+              ru.id === user?.id ? null : (
+                <MenuItem
+                  sx={{ border: 0 }}
+                  key={ru.id.slice(0, 3)}
+                  value={ru.id}
+                >
+                  <Avatar>
+                    <Typography color="white">
+                      {ru.name.trim().charAt(0)}
+                    </Typography>
+                  </Avatar>
+                </MenuItem>
+              )
             )}
-          <MenuItem value={"self"}>
-            <Avatar>
-              <Typography color="white">{"-"}</Typography>
-            </Avatar>
-          </MenuItem>
         </Select>
         <Select
           variant="outlined"

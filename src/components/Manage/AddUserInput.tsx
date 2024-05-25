@@ -39,13 +39,7 @@ const AddUserInput = ({
         disabled={addButtonLoading}
         onClick={handleAddNewUser}
       >
-        {addButtonLoading ? (
-          <CircularProgress
-            sx={{ color: "white", width: "100%", fontWeight: 700 }}
-          />
-        ) : (
-          <PersonAdd />
-        )}
+        {addButtonLoading ? <CircularProgress size={16} /> : <PersonAdd />}
       </IconButton>
     </Box>
   );

@@ -11,10 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 
-import { useStoreActions, useStoreState } from "@/store/typedHooks.ts";
+import { useStoreState } from "@/store/typedHooks.ts";
 import supabase from "@/utils/supabase/supabase.ts";
 
-import { PackagedRoom, UserData } from "../../interfaces/index.ts";
+import { PackagedRoom } from "../../interfaces/index.ts";
 
 const styles: { [key: string]: SxProps<Theme> } = {
   roomcard: {
@@ -39,7 +39,6 @@ export const Rooms = () => {
   const [loading, setLoading] = useState(false);
   const [rooms, setRooms] = useState<PackagedRoom[]>([]);
   const { user, userData } = useStoreState((state) => state);
-  const { setUserData } = useStoreActions((actions) => actions);
 
   useEffect(() => {
     // loads the rooms information to the app
@@ -86,37 +85,63 @@ export const Rooms = () => {
 
   useEffect(() => {
     const userChannel = supabase
-      .channel(`user ch ${userData?.id}`)
+      .channel(`${user?.id} selfch`)
       .on(
-        "postgres_changes",
+        "broadcast",
         {
-          event: "UPDATE",
-          schema: "public",
-          table: "users",
+          event: "new-room-creation",
         },
-        (payload) => {
-          // if (payload.new.id)
-          // console.log(payload);
-          setUserData(payload.new as UserData);
+        ({ payload }) => {
+          setRooms((p) => [payload, ...p]);
+        }
+      )
+      .subscribe();
+
+    const roomChannel = supabase
+      .channel(`room delete ch`)
+      .on(
+        "broadcast",
+        {
+          event: "room-delete",
+        },
+        ({ payload }) => {
+          const newRooms = rooms.filter((r) => r.id !== payload.id);
+          setRooms(newRooms);
+        }
+      )
+      .subscribe();
+
+    const roomChannel2 = supabase
+      .channel(`room ch`)
+      .on(
+        "broadcast",
+        {
+          event: "room-add",
+        },
+        ({ payload }) => {
+          if (payload.clientId === user?.id) {
+            setRooms((p) => [payload.room, ...p]);
+          }
         }
       )
       .on(
-        "postgres_changes",
+        "broadcast",
         {
-          event: "DELETE",
-          schema: "public",
-          table: "users",
+          event: "room-remove",
         },
-        (payload) => {
-          // if (payload.new.id)
-          console.log("delete", payload);
-          // setUserData(payload.new as UserData);
+        ({ payload }) => {
+          if (payload.clientId === user?.id) {
+            const existingRooms = rooms.filter((r) => r.id !== payload.roomId);
+            setRooms(existingRooms);
+          }
         }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(userChannel);
+      supabase.removeChannel(roomChannel);
+      supabase.removeChannel(roomChannel2);
     };
   }, []);
 
