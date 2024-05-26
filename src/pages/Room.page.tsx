@@ -55,12 +55,12 @@ export default function RoomPage() {
           throw error;
         }
 
-        if (!data.users_id.includes(user?.id)) {
+        if (!data.users_id.includes(user?.id ?? "")) {
           throw new Error("User don't access to this room");
         }
 
         console.log("Loaded Current Room " + data?.name);
-        setCurrentRoom({ ...data });
+        setCurrentRoom(data as Room);
         setIsAdmin(data.created_by === user?.id);
         setAppbarTitle(data.name || "Room ~");
         setLoading(false);

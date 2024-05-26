@@ -153,7 +153,7 @@ export default function RoomUserManager() {
 
       const { error } = await supabase
         .from("users")
-        .update({ rooms_id: [...resp.data.rooms_id, roomId] })
+        .update({ rooms_id: [...(resp?.data?.rooms_id ?? []), roomId] })
         .eq("id", resp.data.id);
 
       if (error) {

@@ -76,7 +76,7 @@ export default function CustomAppbar() {
               .eq("id", userId)
               .single();
 
-            const updatedRoomIds = currentUser.rooms_id.filter(
+            const updatedRoomIds = currentUser?.rooms_id?.filter(
               (id: string) => id !== roomToBeDeleted.id
             );
 
