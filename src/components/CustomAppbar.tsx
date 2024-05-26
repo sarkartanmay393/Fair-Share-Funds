@@ -10,11 +10,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import {
-  ExpandMore,
-  AccountCircle,
-  Delete,
-} from "@mui/icons-material";
+import { ExpandMore, AccountCircle, Delete } from "@mui/icons-material";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
@@ -118,13 +114,7 @@ export default function CustomAppbar() {
   }, [location.pathname]);
 
   return (
-    <AppBar
-      position="fixed"
-      sx={{
-        top: 0,
-        height: { xs: "60px", sm: "64px" },
-      }}
-    >
+    <AppBar>
       <Toolbar>
         <IconButton
           size="small"
