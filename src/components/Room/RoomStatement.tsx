@@ -42,11 +42,7 @@ const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
         }
 
         if (listOfUserStatement.length) {
-          const a: Statement[] = [];
-          for (let i = 0; i < 32; i++) {
-            a.push(listOfUserStatement[0]);
-          }
-          setStatements(a as Statement[]);
+          setStatements(listOfUserStatement);
         }
 
         console.log("Loaded statements", listOfUserStatement.length);
