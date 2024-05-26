@@ -96,11 +96,11 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
   return (
     <Box
       width="100%"
-      height="89%"
+      height="100%"
       paddingX={1}
       border="px solid green"
       paddingTop={6}
-      // paddingBottom={9}
+      sx={{ overflowY: "scroll" }}
     >
       {loading ? (
         <Box
@@ -116,13 +116,8 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
         <List
           dense
           sx={{
-            // border: '1px solid red',
             display: "flex",
-            // flexDirection: "column",
-            // justifyContent: "end",
             height: "100%",
-            // pt: "62px",
-            // pb: { xs: "68px", md: "74px" },
             overflowY: "scroll",
             flexDirection: "column-reverse",
           }}

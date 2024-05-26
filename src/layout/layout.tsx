@@ -24,7 +24,7 @@ function Layout({ children }: ILayout) {
       >
         <CustomAppbar />
       </Box>
-      <Box flexGrow={1} border="0px solid green" sx={{ overflowY: "scroll" }}>
+      <Box flexGrow={1} sx={{ overflowY: "auto", position: "relative" }}>
         {children}
       </Box>
     </Box>

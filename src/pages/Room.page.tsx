@@ -127,7 +127,9 @@ export default function RoomPage() {
       ) : (
         <>
           <RoomStatement roomUsers={roomUsers} />
-          <TransactionsHistory roomUsers={roomUsers} />
+          <Box flexGrow={1} width="100%" overflow="auto" paddingBottom="80px">
+            <TransactionsHistory roomUsers={roomUsers} />
+          </Box>
           {currentRoom && roomUsers.length > 1 ? (
             <TransactionInputBar roomData={currentRoom} roomUsers={roomUsers} />
           ) : (
