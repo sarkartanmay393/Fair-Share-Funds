@@ -11,8 +11,10 @@ import RoomUserManager from "./pages/UserManager.page.tsx";
 import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
 import supabase from "./utils/supabase/supabase.ts";
 import { UserData } from "./interfaces/index.ts";
+import useServiceWorker from "./utils/hooks/useServiceWorker.ts";
 
 function App() {
+  useServiceWorker();
   const [loading, setLoading] = useState(true);
   const { user, userData } = useStoreState((state) => state);
   const { setUser, setUserData } = useStoreActions((action) => action);
@@ -65,11 +67,10 @@ function App() {
       <Layout>
         {loading ? (
           <Box
-            height="100%"
-            width="100%"
             display="flex"
             justifyContent="center"
             alignItems="center"
+            mt={4}
           >
             <CircularProgress color="info" />
           </Box>

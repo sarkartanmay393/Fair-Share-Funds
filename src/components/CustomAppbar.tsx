@@ -141,7 +141,10 @@ export default function CustomAppbar() {
           )}
         </IconButton>
 
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{ flexGrow: 1, fontSize: { xs: "1rem", sm: "1.2rem" } }}
+        >
           {appbarTitle}
         </Typography>
 

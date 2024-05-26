@@ -32,6 +32,14 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/screenshots/roompage.png",
+      "sizes": "754×1336",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
   "theme_color": "#FFFFFF",
   "description": "It is a must-have application tailored for hostel students, allowing them to manage financial transactions effortlessly within their friend groups."
 }

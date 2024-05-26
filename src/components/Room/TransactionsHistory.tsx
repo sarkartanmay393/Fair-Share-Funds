@@ -2,7 +2,7 @@ import { Box, List, ListItem, Typography } from "@mui/material";
 
 import { Transaction, UserData } from "../../interfaces/index.ts";
 import TransactionCard from "./TransactionCard.tsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useStoreState } from "@/store/typedHooks.ts";
 import supabase from "@/utils/supabase/supabase.ts";
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const TransactionsHistory = ({ roomUsers }: Props) => {
-  const transactionsBoxRef = useRef<HTMLElement>();
+  // const transactionsBoxRef = useRef<HTMLElement>();
   const pathname = window.location.pathname;
   const roomId = pathname.split("/")[2];
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -95,14 +95,12 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
 
   return (
     <Box
-      ref={transactionsBoxRef}
       width="100%"
-      height="calc(100vh - 220px)"
+      height="89%"
       paddingX={1}
       border="px solid green"
-      margin="auto"
-      // paddingBottom={2}
-      // overflow="clip"
+      paddingTop={6}
+      // paddingBottom={9}
     >
       {loading ? (
         <Box

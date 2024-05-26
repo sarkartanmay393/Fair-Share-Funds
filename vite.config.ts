@@ -14,6 +14,7 @@ export default defineConfig({
         enabled: true,
       },
       workbox: {
+        globDirectory: "/dist",
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
       },
     }),
@@ -22,5 +23,5 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  }
+  },
 });

@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Toolbar } from "@mui/material";
+import { Box } from "@mui/material";
 import CustomAppbar from "../components/CustomAppbar.tsx";
 
 interface ILayout {
@@ -8,21 +8,26 @@ interface ILayout {
 
 function Layout({ children }: ILayout) {
   return (
-    <Grid
-      container
-      direction="column"
-      height="100vh"
-      color="white"
-      border="px solid red"
+    <Box
+      sx={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        color: "white",
+        overflow: "hidden",
+      }}
     >
-      <Grid height="fit-content" item>
+      <Box
+        height={{ xs: "60px", sm: "64px" }}
+        minHeight={{ xs: "60px", sm: "64px" }}
+      >
         <CustomAppbar />
-        <Toolbar />
-      </Grid>
-      <Grid flex={1} item>
+      </Box>
+      <Box flexGrow={1} border="0px solid green" sx={{ overflowY: "scroll" }}>
         {children}
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }
 

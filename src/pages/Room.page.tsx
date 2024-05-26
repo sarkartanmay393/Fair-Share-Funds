@@ -106,11 +106,12 @@ export default function RoomPage() {
   return (
     <Box
       // ref={trnxContainerRef}
-      width="100%"
       height="100%"
       display="flex"
       flexDirection="column"
       alignItems="center"
+      position="relative"
+      border="px solid yellow"
     >
       {loading ? (
         <Box
