@@ -95,7 +95,8 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
 
   return (
     <Box
-      flexGrow={1}
+      width="100%"
+      height="100%"
       paddingX={1}
       border="px solid green"
       paddingTop={6}
