@@ -85,7 +85,7 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
       const { error: statementRollbackError } = await supabase
         .from("statements")
         .update({ amount: oldStatement.amount })
-        .eq("id", oldStatement.id);
+        .eq("id", oldStatement.id ?? "");
 
       if (statementRollbackError) {
         console.error("Rollback failed", statementRollbackError.message);
@@ -124,7 +124,7 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
           .eq("id", transaction.from_user)
           .single();
 
-        setSendBy(data?.name);
+        setSendBy(data?.name ?? "");
 
         const { data: data2 } = await supabase
           .from("users")
@@ -132,7 +132,7 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
           .eq("id", transaction.to_user)
           .single();
 
-        setSentTo(data2?.name);
+        setSentTo(data2?.name ?? "");
       } catch (error) {
         console.log(error);
       }

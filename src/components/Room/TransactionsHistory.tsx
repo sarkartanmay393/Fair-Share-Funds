@@ -71,7 +71,7 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
   }, []);
 
   useEffect(() => {
-    const subscribe = supabase
+    const channel = supabase
       .channel(`${roomId}`)
       .on("broadcast", { event: "incoming-transaction" }, ({ payload }) => {
         console.log(" received!", payload);
@@ -89,7 +89,7 @@ const TransactionsHistory = ({ roomUsers }: Props) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscribe);
+      supabase.removeChannel(channel);
     };
   }, []);
 

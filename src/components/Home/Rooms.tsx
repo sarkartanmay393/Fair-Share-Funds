@@ -98,7 +98,7 @@ export const Rooms = () => {
       .subscribe();
 
     const roomChannel = supabase
-      .channel(`room delete ch`)
+      .channel(`global room ch`)
       .on(
         "broadcast",
         {
@@ -109,10 +109,6 @@ export const Rooms = () => {
           setRooms(newRooms);
         }
       )
-      .subscribe();
-
-    const roomChannel2 = supabase
-      .channel(`room ch`)
       .on(
         "broadcast",
         {
@@ -141,7 +137,6 @@ export const Rooms = () => {
     return () => {
       supabase.removeChannel(userChannel);
       supabase.removeChannel(roomChannel);
-      supabase.removeChannel(roomChannel2);
     };
   }, []);
 

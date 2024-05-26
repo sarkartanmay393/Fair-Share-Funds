@@ -90,11 +90,10 @@ export default function RoomPage() {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms" },
         (payload) => {
-          console.log(`UPDATE current room`);
-          const nr = payload.new;
-          setCurrentRoom({
-            ...nr,
-          } as Room);
+          if (payload.new.id === currentRoom?.id) {
+            console.log(`UPDATE current room`);
+            setCurrentRoom(payload.new as Room);
+          }
         }
       )
       .subscribe();

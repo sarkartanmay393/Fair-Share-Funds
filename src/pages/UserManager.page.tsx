@@ -180,7 +180,7 @@ export default function RoomUserManager() {
       setRoomUsers((pr) => [resp.data as UserData, ...pr]);
 
       console.log("sending broadcast add user to room");
-      await supabase.channel(`room ch`).send({
+      await supabase.channel(`global room ch`).send({
         type: "broadcast",
         event: "room-add",
         payload: { clientId: resp.data.id, room: resp3.data },
@@ -245,13 +245,13 @@ export default function RoomUserManager() {
       }
 
       console.log("sending broadcast remove user to room");
-      await supabase.channel(`room ch`).send({
+      await supabase.channel(`global room ch`).send({
         type: "broadcast",
         event: "room-remove",
         payload: { clientId: user.id, roomId: roomId },
       });
 
-      const exisitngRoomUser = roomUsers.filter(ru => ru.id !== user.id);
+      const exisitngRoomUser = roomUsers.filter((ru) => ru.id !== user.id);
       setRoomUsers(exisitngRoomUser);
 
       setWillBeDeleted("");

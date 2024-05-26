@@ -42,11 +42,12 @@ export default function Homepage() {
       }
 
       console.log("sending broadcast new room to self");
-      await supabase.channel(`${user.id} selfch`).send({
+      const status = await supabase.channel(`${user.id} selfch`, ).send({
         type: "broadcast",
         event: "new-room-creation",
         payload: { ...data },
       });
+      console.log("new-room-creation", status);
 
       let roomsOfCurrentUser = userData?.rooms_id;
       if (roomsOfCurrentUser) {

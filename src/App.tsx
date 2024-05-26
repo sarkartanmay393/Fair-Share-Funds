@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Box, CircularProgress } from "@mui/material";
 
 import Layout from "./layout/layout.tsx";
 import Homepage from "./pages/Home.page.tsx";
@@ -6,13 +8,9 @@ import { AuthPage } from "./pages/Auth.page.tsx";
 import RoomPage from "./pages/Room.page.tsx";
 import NotFoundPage from "./pages/NotFound.page.tsx";
 import RoomUserManager from "./pages/UserManager.page.tsx";
-// import { useUserActions } from "./utils/useUserActions.ts";
 import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
-import { useEffect, useState } from "react";
 import supabase from "./utils/supabase/supabase.ts";
 import { UserData } from "./interfaces/index.ts";
-import { Box, CircularProgress } from "@mui/material";
-// import { useEffect } from "react";
 
 function App() {
   const [loading, setLoading] = useState(true);
