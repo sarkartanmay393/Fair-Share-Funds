@@ -7,17 +7,15 @@ import {
   MenuItem,
   IconButton,
   Typography,
-  Avatar,
   Button,
-  ListItemIcon,
   CircularProgress,
 } from "@mui/material";
 import {
   ExpandMore,
   AccountCircle,
-  Settings,
   Delete,
 } from "@mui/icons-material";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
 import { useStoreActions, useStoreState } from "../store/typedHooks.ts";
 
@@ -129,20 +127,21 @@ export default function CustomAppbar() {
     >
       <Toolbar>
         <IconButton
-          size="large"
+          size="small"
           edge="start"
           aria-label="logo"
           onClick={() => pathname.length > 1 && navigate(-1)}
         >
           {pathname.length > 1 ? (
-            <img width={36} height={36} src={BackIcon} alt="back" />
+            <img width={30} height={30} src={BackIcon} alt="back" />
           ) : (
-            <img width={36} height={36} src={Logo} alt="roompay logo" />
+            <img width={30} height={30} src={Logo} alt="roompay logo" />
           )}
         </IconButton>
 
         <Typography
-          variant="h6"
+          variant="h1"
+          fontWeight={600}
           sx={{ flexGrow: 1, fontSize: { xs: "1rem", sm: "1.2rem" } }}
         >
           {appbarTitle}
@@ -173,7 +172,6 @@ export default function CustomAppbar() {
                 sx: {
                   overflow: "visible",
                   filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                  mt: 1.5,
                   "& .MuiAvatar-root": {
                     width: 32,
                     height: 32,
@@ -208,23 +206,25 @@ export default function CustomAppbar() {
                     navigate(`${pathname}/manage`)
                   }
                 >
-                  <Avatar />
-                  Manage Users{" "}
+                  <ManageAccountsIcon fontSize="small" sx={{ mr: 0.75 }} />
+                  <Typography fontSize={14}>Manage Users</Typography>
                 </MenuItem>
               ) : null}
               {isAdmin ? (
                 <MenuItem disabled={deletingLoading} onClick={handleDeleteRoom}>
-                  <Delete />
-                  {deletingLoading ? <CircularProgress /> : "Delete Room"}
+                  <Delete fontSize="small" sx={{ mr: 0.75 }} />
+                  {deletingLoading ? (
+                    <CircularProgress />
+                  ) : (
+                    <Typography fontSize={14}>Delete Room</Typography>
+                  )}
                 </MenuItem>
               ) : null}
               {/* <Divider /> */}
-              <MenuItem disabled onClick={() => setAnchorEl(null)}>
-                <ListItemIcon>
-                  <Settings fontSize="small" />
-                </ListItemIcon>
+              {/* <MenuItem disabled onClick={() => setAnchorEl(null)}>
+                <TuneIcon fontSize="small" sx={{ mr: 0.75 }} />
                 Settings
-              </MenuItem>
+              </MenuItem> */}
             </Menu>
           </div>
         )}
@@ -246,17 +246,35 @@ export default function CustomAppbar() {
             <Menu
               id="account-control-menu"
               anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  overflow: "visible",
+                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  "& .MuiAvatar-root": {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  "&:before": {
+                    content: '""',
+                    display: "block",
+                    position: "absolute",
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: "background.paper",
+                    transform: "translateY(-50%) rotate(45deg)",
+                    zIndex: 0,
+                  },
+                },
+              }}
             >
               <MenuItem
                 onClick={() =>

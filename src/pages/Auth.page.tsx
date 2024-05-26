@@ -27,7 +27,7 @@ const style = {
   borderRadius: "8px",
 };
 
-export const AuthPage = () => {
+const AuthPage = () => {
   const [alignment, setAlignment] = React.useState("login");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState({ message: "", spec: "" });
@@ -217,3 +217,5 @@ export const AuthPage = () => {
     </React.Fragment>
   );
 };
+
+export default AuthPage;

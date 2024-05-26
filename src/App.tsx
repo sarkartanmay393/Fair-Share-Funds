@@ -1,20 +1,19 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 
-import Layout from "./layout/layout.tsx";
-import Homepage from "./pages/Home.page.tsx";
-import { AuthPage } from "./pages/Auth.page.tsx";
-import RoomPage from "./pages/Room.page.tsx";
-import NotFoundPage from "./pages/NotFound.page.tsx";
-import RoomUserManager from "./pages/UserManager.page.tsx";
+const Layout = lazy(() => import("./layout/layout.tsx"));
+const Homepage = lazy(() => import("./pages/Home.page.tsx"));
+const AuthPage = lazy(() => import("./pages/Auth.page.tsx"));
+const RoomPage = lazy(() => import("./pages/Room.page.tsx"));
+const NotFoundPage = lazy(() => import("./pages/NotFound.page.tsx"));
+const RoomUserManager = lazy(() => import("./pages/UserManager.page.tsx"));
+
 import { useStoreActions, useStoreState } from "./store/typedHooks.ts";
 import supabase from "./utils/supabase/supabase.ts";
 import { UserData } from "./interfaces/index.ts";
-import useServiceWorker from "./utils/hooks/useServiceWorker.ts";
 
 function App() {
-  useServiceWorker();
   const [loading, setLoading] = useState(true);
   const { user, userData } = useStoreState((state) => state);
   const { setUser, setUserData } = useStoreActions((action) => action);
@@ -78,15 +77,50 @@ function App() {
           <>
             {!user && !userData && <Navigate to="/auth" />}
             <Routes>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/auth" element={<AuthPage />} />
+              <Route
+                path="/"
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Homepage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/auth"
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <AuthPage />
+                  </Suspense>
+                }
+              />
 
               <Route path="/room/:id">
-                <Route index element={<RoomPage />} />
-                <Route path="manage" element={<RoomUserManager />} />
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <RoomPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="manage"
+                  element={
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <RoomUserManager />
+                    </Suspense>
+                  }
+                />
               </Route>
 
-              <Route path="*" element={<NotFoundPage />} />
+              <Route
+                path="*"
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <NotFoundPage />
+                  </Suspense>
+                }
+              />
             </Routes>
           </>
         )}

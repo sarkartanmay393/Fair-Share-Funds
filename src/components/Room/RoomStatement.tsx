@@ -42,7 +42,11 @@ const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
         }
 
         if (listOfUserStatement.length) {
-          setStatements(listOfUserStatement);
+          const a: Statement[] = [];
+          for (let i = 0; i < 32; i++) {
+            a.push(listOfUserStatement[0]);
+          }
+          setStatements(a as Statement[]);
         }
 
         console.log("Loaded statements", listOfUserStatement.length);
@@ -86,19 +90,28 @@ const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
         borderRadius: 3,
         flexDirection: "column",
         width: "95%",
+        maxHeight: "75%",
+        // overflow: "auto",
       }}
     >
-      <Accordion>
+      <Accordion sx={{ flexGrow: 1 }}>
         <AccordionSummary
           expandIcon={<KeyboardArrowDown />}
           aria-controls="panel1a-content"
         >
           <Typography>Statement</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: 0, paddingBottom: 2, paddingX: 2 }}>
+        <AccordionDetails
+          sx={{
+            padding: 0,
+            paddingBottom: 2,
+            paddingX: 2,
+            height: "60vh",
+            overflowY: "scroll",
+          }}
+        >
           {loading ? (
             <Box
-              key={"saldkfh"}
               sx={{
                 display: "flex",
                 justifyContent: "center",
@@ -108,21 +121,21 @@ const RoomStatement = ({ roomUsers }: RoomStatementProps) => {
               <CircularProgress size={16} />
             </Box>
           ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
               {statements.length > 0 ? (
                 statements.map((s, index) => {
                   const statementSpecificUser = roomUsers.find(
                     (ru) => s.between.includes(ru.id) && ru.id !== user?.id
                   );
-
                   if (!statementSpecificUser) {
-                    return (
-                      <Fragment
-                        key={"fragementIdPlacehlderstatement"}
-                      ></Fragment>
-                    );
+                    return <Fragment key={index}></Fragment>;
                   }
-
                   return (
                     <Box
                       key={index}
