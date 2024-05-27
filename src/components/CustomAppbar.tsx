@@ -137,7 +137,7 @@ export default function CustomAppbar() {
           {appbarTitle}
         </Typography>
 
-        {roomId && (
+        {isAdmin && (
           <div>
             <IconButton
               size="large"
@@ -185,36 +185,26 @@ export default function CustomAppbar() {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              {isAdmin ? (
-                <MenuItem
-                  sx={{
-                    display: pathname.includes("manage") ? "none" : "flex",
-                  }}
-                  disabled={!isAdmin}
-                  onClick={() =>
-                    !pathname.includes("manage") &&
-                    navigate(`${pathname}/manage`)
-                  }
-                >
-                  <ManageAccountsIcon fontSize="small" sx={{ mr: 0.75 }} />
-                  <Typography fontSize={14}>Manage Users</Typography>
-                </MenuItem>
-              ) : null}
-              {isAdmin ? (
-                <MenuItem disabled={deletingLoading} onClick={handleDeleteRoom}>
-                  <Delete fontSize="small" sx={{ mr: 0.75 }} />
-                  {deletingLoading ? (
-                    <CircularProgress />
-                  ) : (
-                    <Typography fontSize={14}>Delete Room</Typography>
-                  )}
-                </MenuItem>
-              ) : null}
-              {/* <Divider /> */}
-              {/* <MenuItem disabled onClick={() => setAnchorEl(null)}>
-                <TuneIcon fontSize="small" sx={{ mr: 0.75 }} />
-                Settings
-              </MenuItem> */}
+              <MenuItem
+                sx={{
+                  display: pathname.includes("manage") ? "none" : "flex",
+                }}
+                disabled={!isAdmin}
+                onClick={() =>
+                  !pathname.includes("manage") && navigate(`${pathname}/manage`)
+                }
+              >
+                <ManageAccountsIcon fontSize="small" sx={{ mr: 0.75 }} />
+                <Typography fontSize={14}>Manage Users</Typography>
+              </MenuItem>
+              <MenuItem disabled={deletingLoading} onClick={handleDeleteRoom}>
+                <Delete fontSize="small" sx={{ mr: 0.75 }} />
+                {deletingLoading ? (
+                  <CircularProgress />
+                ) : (
+                  <Typography fontSize={14}>Delete Room</Typography>
+                )}
+              </MenuItem>
             </Menu>
           </div>
         )}

@@ -164,12 +164,16 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
             flexDirection: "column",
           }}
         >
-          <Typography sx={{ fontSize: "15px" }}>
-            {transaction.from_user === user?.id ? "You" : sendBy ?? "Noname"}
+          <Typography sx={{ fontSize: "15px", textWrap: "nowrap" }}>
+            {transaction.from_user === user?.id
+              ? "You"
+              : sendBy.substring(0, 8) ?? "Noname"}
           </Typography>
           <Typography sx={{ fontSize: "12px" }}>
             {transaction.type === "Pay" ? "Paid" : "Borrowed"}{" "}
-            <span style={{ fontWeight: 600 }}>{sentTo ?? "Noname"}</span>
+            <span style={{ fontWeight: 600 }}>
+              {sentTo.substring(0, 8) ?? "Noname"}
+            </span>
           </Typography>
         </Box>
       </Box>
@@ -183,25 +187,26 @@ const TransactionCard = ({ toUserDataSelf, transaction }: Props) => {
         </Typography>
         {transaction.approved ? (
           <DoneAll sx={{ fontSize: "18px", opacity: 0.6 }} />
-        ) :
-        toUserDataSelf && (
-          <Button
-            disableRipple
-            disabled={transaction.approved || false}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              bgcolor: "green",
-            }}
-            onClick={() => approveTransaction(transaction.id)}
-          >
-            {isLoading ? (
-              <CircularProgress />
-            ) : (
-              <Done sx={{ fontSize: "18px" }} />
-            )}
-          </Button>
+        ) : (
+          toUserDataSelf && (
+            <Button
+              disableRipple
+              disabled={transaction.approved || false}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                bgcolor: "green",
+              }}
+              onClick={() => approveTransaction(transaction.id)}
+            >
+              {isLoading ? (
+                <CircularProgress />
+              ) : (
+                <Done sx={{ fontSize: "18px" }} />
+              )}
+            </Button>
+          )
         )}
         {!toUserDataSelf && !transaction.approved && (
           <Close sx={{ fontSize: "18px", opacity: 0.6 }} />

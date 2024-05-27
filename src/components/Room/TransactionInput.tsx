@@ -169,11 +169,10 @@ export default function TransactionInputBar({
 
   return (
     <Box
-      id="trxnInput"
       component="form"
-      position="fixed"
-      left="50%"
-      bottom={10}
+      // position="fixed"
+      // left="50%"
+      // bottom={10}
       borderRadius={20}
       height="64px"
       width={{ xs: "95%", sm: "90%", md: "85%" }}
@@ -182,7 +181,7 @@ export default function TransactionInputBar({
       justifyContent="space-between"
       bgcolor="background.paper"
       onSubmit={useTransactionInputFormik.handleSubmit}
-      sx={{ transform: "translateX(-50%)" }}
+      // sx={{ transform: "translateX(-50%)" }}
     >
       <Box
         flex={1}
@@ -257,7 +256,11 @@ export default function TransactionInputBar({
           type="submit"
           sx={{}}
         >
-          {loading ? <CircularProgress /> : <Send sx={{ fontSize: "22px" }} />}
+          {loading ? (
+            <CircularProgress size={16} />
+          ) : (
+            <Send sx={{ fontSize: "22px" }} />
+          )}
         </IconButton>
       </Box>
     </Box>

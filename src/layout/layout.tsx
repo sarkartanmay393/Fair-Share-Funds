@@ -10,12 +10,14 @@ function Layout({ children }: ILayout) {
   return (
     <Box
       sx={{
-        width: "100vw",
-        height: "100vh",
+        width: "100dvw",
+        height: "100dvh",
         display: "flex",
         flexDirection: "column",
         color: "white",
         overflow: "hidden",
+
+        // border: "10px solid green",
       }}
     >
       <Box
@@ -24,7 +26,7 @@ function Layout({ children }: ILayout) {
       >
         <CustomAppbar />
       </Box>
-      <Box flexGrow={1} sx={{ overflowY: "auto", position: "relative" }}>
+      <Box flex={1} sx={{ overflowY: "auto" }}>
         {children}
       </Box>
     </Box>
