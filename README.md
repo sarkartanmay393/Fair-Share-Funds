@@ -1,3 +1,5 @@
+<img src="https://github.com/sarkartanmay393/RoomPay-Web/blob/main/public/icons/pwa-512x512.png?raw=true" style="width:5rem;" />
+
 # RoomPay
 
 ## Seemless Room Transactions
